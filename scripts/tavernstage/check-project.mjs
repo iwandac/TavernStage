@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -50,11 +50,6 @@ const normalise = (value) => value.replace(/\r\n/g, '\n');
 assert.equal(normalise(read('LICENSE')), normalise(git('show', `${manifest.upstream.commit}:LICENSE`)));
 const baselinePkg = JSON.parse(git('show', `${manifest.upstream.commit}:package.json`));
 assert.equal(baselinePkg.version, manifest.upstream.packageVersion);
-const baselineGithubPaths = git('ls-tree', '-r', '--name-only', manifest.upstream.commit, '--', '.github/').trim().split('\n');
-for (const path of baselineGithubPaths) {
-    const archive = path.replace(/^\.github\//, 'docs/upstream/github/');
-    assert.equal(normalise(read(archive)), normalise(git('show', `${manifest.upstream.commit}:${path}`)), `Upstream archive differs: ${path}`);
-}
 
 assert.match(read('README.md'), /^# TavernStage/m);
 const githubFiles = readdirSync(new URL('../../.github/', import.meta.url));
@@ -63,7 +58,18 @@ const workflows = readdirSync(new URL('../../.github/workflows/', import.meta.ur
 assert.deepEqual(workflows, ['tavernstage-checks.yml'], 'Review inherited/new workflows before enabling them.');
 const workflow = read('.github/workflows/tavernstage-checks.yml');
 assert.ok(!/pull_request_target|\bwrite\b|secrets\.|npm publish/.test(workflow));
-for (const path of ['CONTRIBUTING.md', 'SECURITY.md', 'docs/tavernstage/development.md', 'docs/upstream/README.md']) {
-    assert.ok(existsSync(new URL(`../../${path}`, import.meta.url)), `Missing project document: ${path}`);
+// Inspect tracked paths, not local files: ignored research must never be a CI dependency.
+const inheritedAssetDocs = new Set([
+    'backups/!README.md',
+    'default/scaffold/README.md',
+    'public/css/!USER-CSS-README.md',
+    'public/scripts/extensions/tts/lib/README.md',
+    'public/scripts/extensions/tts/readme.md',
+]);
+for (const path of git('ls-files', '-z').split('\0').filter(Boolean)) {
+    assert.ok(!/^(?:doc|docs)\//i.test(path), `Local-only document is tracked: ${path}`);
+    if (/\.(?:md|rst|adoc)$/i.test(path)) {
+        assert.ok(path === 'README.md' || inheritedAssetDocs.has(path), `Only README and inherited asset documentation may be tracked: ${path}`);
+    }
 }
-console.log('TavernStage bootstrap identity, provenance, lock and workflow checks passed. Runtime behavior was not tested.');
+console.log('TavernStage bootstrap identity, provenance, lock, workflow and documentation checks passed. Runtime behavior was not tested.');
