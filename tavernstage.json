@@ -3,9 +3,15 @@
   "name": "TavernStage",
   "repository": "https://github.com/iwandac/TavernStage",
   "mainBranch": "main",
-  "stage": "source-bootstrap",
+  "stage": "headless-g1",
   "runtimeVersion": null,
-  "runtimeAvailable": false,
+  "runtimeAvailable": true,
+  "runtime": {
+    "entrypoint": "src/tavernstage/runtime.js",
+    "stability": "experimental",
+    "acceptedGate": "G1",
+    "productionReady": false
+  },
   "upstream": {
     "repository": "https://github.com/SillyTavern/SillyTavern",
     "branch": "release",

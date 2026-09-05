@@ -4,6 +4,7 @@ import util from 'node:util';
 import express from 'express';
 import fetch from 'node-fetch';
 import urlJoin from 'url-join';
+import { chatCompletionBody, customBodyParameters } from '../../tavernstage/request-body.js';
 
 import {
     AIMLAPI_HEADERS,
@@ -2305,18 +2306,7 @@ router.post('/generate', async function (request, response) {
             apiUrl = request.body.custom_url;
             apiKey = readSecret(request.user.directories, SECRET_KEYS.CUSTOM, request.body.secret_id);
             headers = {};
-            bodyParams = {
-                logprobs: request.body.logprobs,
-                top_logprobs: undefined,
-            };
-
-            // Adjust logprobs params for Chat Completions API, which expects { top_logprobs: number; logprobs: boolean; }
-            if (!isTextCompletion && bodyParams.logprobs > 0) {
-                bodyParams.top_logprobs = bodyParams.logprobs;
-                bodyParams.logprobs = true;
-            }
-
-            mergeObjectWithYaml(bodyParams, request.body.custom_include_body);
+            bodyParams = customBodyParameters(request.body, isTextCompletion);
             mergeObjectWithYaml(headers, request.body.custom_include_headers);
             embedOpenRouterMedia(request.body.messages, { audio: true, video: false });
             if (request.body.json_schema) {
@@ -2550,24 +2540,7 @@ router.post('/generate', async function (request, response) {
             };
         }
 
-        const requestBody = {
-            'messages': isTextCompletion === false ? request.body.messages : undefined,
-            'prompt': isTextCompletion === true ? textPrompt : undefined,
-            'model': request.body.model,
-            'temperature': request.body.temperature,
-            'max_tokens': request.body.max_tokens,
-            'max_completion_tokens': request.body.max_completion_tokens,
-            'stream': request.body.stream,
-            'presence_penalty': request.body.presence_penalty,
-            'frequency_penalty': request.body.frequency_penalty,
-            'top_p': request.body.top_p,
-            'top_k': request.body.top_k,
-            'stop': isTextCompletion === false ? request.body.stop : undefined,
-            'logit_bias': request.body.logit_bias,
-            'seed': request.body.seed,
-            'n': request.body.n,
-            ...bodyParams,
-        };
+        const requestBody = chatCompletionBody(request.body, isTextCompletion, textPrompt, bodyParams);
 
         if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.CUSTOM) {
             excludeKeysByYaml(requestBody, request.body.custom_exclude_body);

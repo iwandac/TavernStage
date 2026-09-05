@@ -1,3 +1,27 @@
+
+// TavernStage shared core. Getters retain this browser host's live state.
+import { createCore as createTavernStageCore } from './tavernstage/scripts-authors-note.js';
+const generationHost = { readInput: () => String($('#send_textarea').val()), writeInput: value => { $('#send_textarea').val(value)[0].dispatchEvent(new Event('input', { bubbles: true })); }, firstDisplayedMessageId: () => Number(document.querySelector('#chat .mes')?.getAttribute('mesid')), readAuthorNote: () => $('#extension_floating_prompt').val(), presentAuthorNoteCounter: value => $('#extension_floating_counter').text(value) };
+var tavernStageCore;
+function getTavernStageCore() {
+ return tavernStageCore ??= createTavernStageCore({
+  get MAX_INJECTION_DEPTH() { return MAX_INJECTION_DEPTH; },
+  get MacroCategory() { return MacroCategory; },
+  get MacrosParser() { return MacrosParser; },
+  get chat_metadata() { return chat_metadata; },
+  get console() { return console; },
+  get extension_prompt_types() { return extension_prompt_types; },
+  get extension_settings() { return extension_settings; },
+  get generationHost() { return generationHost; },
+  get getCharaFilename() { return getCharaFilename; },
+  get getContext() { return getContext; },
+  get macros() { return macros; },
+  get power_user() { return power_user; },
+  get shouldWIAddPrompt() { return shouldWIAddPrompt; }, set shouldWIAddPrompt(value) { shouldWIAddPrompt = value; },
+  get t() { return t; },
+  get this_chid() { return this_chid; },
+ });
+}
 import {
     MAX_INJECTION_DEPTH,
     animation_duration,
@@ -23,23 +47,13 @@ import { macros, MacroCategory } from './macros/macro-system.js';
 import { MacrosParser } from './macros.js';
 import { power_user } from './power-user.js';
 
-const MODULE_NAME = '2_floating_prompt'; // <= Deliberate, for sorting lower than memory
+const MODULE_NAME = getTavernStageCore().MODULE_NAME; // <= Deliberate, for sorting lower than memory
 
 export var shouldWIAddPrompt = false;
 
-export const metadata_keys = {
-    prompt: 'note_prompt',
-    interval: 'note_interval',
-    depth: 'note_depth',
-    position: 'note_position',
-    role: 'note_role',
-};
+export const metadata_keys = getTavernStageCore().metadata_keys;
 
-const chara_note_position = {
-    replace: 0,
-    before: 1,
-    after: 2,
-};
+const chara_note_position = getTavernStageCore().chara_note_position;
 
 function setNoteTextCommand(_, text) {
     if (text) {
@@ -321,75 +335,7 @@ function loadSettings() {
     $(`input[name="extension_default_position"][value="${extension_settings.note.defaultPosition}"]`).prop('checked', true);
 }
 
-export function setFloatingPrompt() {
-    const context = getContext();
-    if (!context.groupId && context.characterId === undefined) {
-        console.debug('setFloatingPrompt: Not in a chat. Skipping.');
-        shouldWIAddPrompt = false;
-        return;
-    }
-
-    // take the count of messages
-    let lastMessageNumber = Array.isArray(context.chat) && context.chat.length ? context.chat.filter(m => m.is_user).length : 0;
-
-    console.debug(`
-    setFloatingPrompt entered
-    ------
-    lastMessageNumber = ${lastMessageNumber}
-    metadata_keys.interval = ${chat_metadata[metadata_keys.interval]}
-    metadata_keys.position = ${chat_metadata[metadata_keys.position]}
-    metadata_keys.depth = ${chat_metadata[metadata_keys.depth]}
-    metadata_keys.role = ${chat_metadata[metadata_keys.role]}
-    ------
-    `);
-
-    // interval 1 should be inserted no matter what
-    if (chat_metadata[metadata_keys.interval] === 1) {
-        lastMessageNumber = 1;
-    }
-
-    if (lastMessageNumber <= 0 || chat_metadata[metadata_keys.interval] <= 0) {
-        context.setExtensionPrompt(MODULE_NAME, '', extension_prompt_types.NONE, MAX_INJECTION_DEPTH);
-        $('#extension_floating_counter').text('(disabled)');
-        shouldWIAddPrompt = false;
-        return;
-    }
-
-    const messagesTillInsertion = lastMessageNumber >= chat_metadata[metadata_keys.interval]
-        ? (lastMessageNumber % chat_metadata[metadata_keys.interval])
-        : (chat_metadata[metadata_keys.interval] - lastMessageNumber);
-    const shouldAddPrompt = messagesTillInsertion == 0;
-    shouldWIAddPrompt = shouldAddPrompt;
-
-    let prompt = shouldAddPrompt ? $('#extension_floating_prompt').val() : '';
-    if (shouldAddPrompt && extension_settings.note.chara && getContext().characterId !== undefined) {
-        const charaNote = extension_settings.note.chara.find((e) => e.name === getCharaFilename());
-
-        // Only replace with the chara note if the user checked the box
-        if (charaNote && charaNote.useChara) {
-            switch (charaNote.position) {
-                case chara_note_position.before:
-                    prompt = charaNote.prompt + '\n' + prompt;
-                    break;
-                case chara_note_position.after:
-                    prompt = prompt + '\n' + charaNote.prompt;
-                    break;
-                default:
-                    prompt = charaNote.prompt;
-                    break;
-            }
-        }
-    }
-    context.setExtensionPrompt(
-        MODULE_NAME,
-        String(prompt),
-        chat_metadata[metadata_keys.position],
-        chat_metadata[metadata_keys.depth],
-        extension_settings.note.allowWIScan,
-        chat_metadata[metadata_keys.role],
-    );
-    $('#extension_floating_counter').text(shouldAddPrompt ? '0' : messagesTillInsertion);
-}
+export function setFloatingPrompt(...args) { return getTavernStageCore().setFloatingPrompt.apply(this, args); }
 
 function onANMenuItemClick() {
     if (!selected_group && this_chid === undefined) {
@@ -584,36 +530,4 @@ export function initAuthorsNote() {
     registerAuthorsNoteMacros();
 }
 
-function registerAuthorsNoteMacros() {
-    if (power_user.experimental_macro_engine) {
-        macros.register('authorsNote', {
-            category: MacroCategory.PROMPTS,
-            description: t`The contents of the Author's Note`,
-            handler: () => chat_metadata[metadata_keys.prompt] ?? '',
-        });
-        macros.register('charAuthorsNote', {
-            category: MacroCategory.PROMPTS,
-            description: t`The contents of the Character Author's Note`,
-            handler: () => this_chid !== undefined ? (extension_settings.note.chara.find((e) => e.name === getCharaFilename())?.prompt ?? '') : '',
-        });
-        macros.register('defaultAuthorsNote', {
-            category: MacroCategory.PROMPTS,
-            description: t`The contents of the Default Author's Note`,
-            handler: () => extension_settings.note.default ?? '',
-        });
-    } else {
-        // TODO: Remove this when the experimental macro engine is replacing the old macro engine
-        MacrosParser.registerMacro('authorsNote',
-            () => chat_metadata[metadata_keys.prompt] ?? '',
-            t`The contents of the Author's Note`,
-        );
-        MacrosParser.registerMacro('charAuthorsNote',
-            () => this_chid !== undefined ? (extension_settings.note.chara.find((e) => e.name === getCharaFilename())?.prompt ?? '') : '',
-            t`The contents of the Character Author's Note`,
-        );
-        MacrosParser.registerMacro('defaultAuthorsNote',
-            () => extension_settings.note.default ?? '',
-            t`The contents of the Default Author's Note`,
-        );
-    }
-}
+function registerAuthorsNoteMacros(...args) { return getTavernStageCore().registerAuthorsNoteMacros.apply(this, args); }

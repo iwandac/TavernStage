@@ -1,3 +1,17 @@
+
+// TavernStage shared core. Getters retain this browser host's live state.
+import { createCore as createTavernStageCore } from './tavernstage/scripts-utils.js';
+var tavernStageCore;
+function getTavernStageCore() {
+ return tavernStageCore ??= createTavernStageCore({
+  get Date() { return Date; },
+  get Math() { return Math; },
+  get SlashCommandClosure() { return SlashCommandClosure; },
+  get getCurrentLocale() { return getCurrentLocale; },
+  get moment() { return moment; },
+  get power_user() { return power_user; },
+ });
+}
 import {
     moment,
     DOMPurify,
@@ -205,67 +219,7 @@ export function isUuid(value) {
  * @param {string} type Type to convert to
  * @returns {any} Converted value
  */
-export function convertValueType(value, type) {
-    if (value instanceof SlashCommandClosure || typeof type !== 'string') {
-        return value;
-    }
-
-    switch (type.trim().toLowerCase()) {
-        case 'string':
-        case 'str':
-            return String(value);
-
-        case 'null':
-            return null;
-
-        case 'undefined':
-        case 'none':
-            return undefined;
-
-        case 'number':
-            return Number(value);
-
-        case 'int':
-            return parseInt(value, 10);
-
-        case 'float':
-            return parseFloat(value);
-
-        case 'boolean':
-        case 'bool':
-            return isTrueBoolean(value);
-
-        case 'list':
-        case 'array':
-            try {
-                const parsedArray = JSON.parse(value);
-                if (Array.isArray(parsedArray)) {
-                    return parsedArray;
-                }
-                // The value is not an array
-                return [];
-            } catch {
-                return [];
-            }
-
-        case 'object':
-        case 'dict':
-        case 'dictionary':
-            try {
-                const parsedObject = JSON.parse(value);
-                if (typeof parsedObject === 'object') {
-                    return parsedObject;
-                }
-                // The value is not an object
-                return {};
-            } catch {
-                return {};
-            }
-
-        default:
-            return value;
-    }
-}
+export function convertValueType(...args) { return getTavernStageCore().convertValueType.apply(this, args); }
 
 /**
  * Parses ranges like 10-20 or 10.
@@ -305,9 +259,7 @@ export function stringToRange(input, min, max) {
  * @param {any} array The array being processed.
  * @returns {boolean} True if the value is unique, false otherwise.
  */
-export function onlyUnique(value, index, array) {
-    return array.indexOf(value) === index;
-}
+export function onlyUnique(...args) { return getTavernStageCore().onlyUnique.apply(this, args); }
 
 /**
  * Determines if a value is unique in an array of objects.
@@ -351,9 +303,7 @@ export function normalizeArray(arr) {
  * isDigitsOnly('123'); // true
  * isDigitsOnly('abc'); // false
  */
-export function isDigitsOnly(str) {
-    return /^\d+$/.test(str);
-}
+export function isDigitsOnly(...args) { return getTavernStageCore().isDigitsOnly.apply(this, args); }
 
 /**
  * Gets a drag delay for sortable elements. This is to prevent accidental drags when scrolling.
@@ -519,24 +469,7 @@ export async function parseJsonFile(file) {
  * @param {number} [seed=0] The seed to use for the hash.
  * @returns {number} The hash code.
  */
-export function getStringHash(str, seed = 0) {
-    if (typeof str !== 'string') {
-        return 0;
-    }
-
-    let h1 = 0xdeadbeef ^ seed,
-        h2 = 0x41c6ce57 ^ seed;
-    for (let i = 0, ch; i < str.length; i++) {
-        ch = str.charCodeAt(i);
-        h1 = Math.imul(h1 ^ ch, 2654435761);
-        h2 = Math.imul(h2 ^ ch, 1597334677);
-    }
-
-    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-
-    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
-}
+export function getStringHash(...args) { return getTavernStageCore().getStringHash.apply(this, args); }
 
 /**
  * Copy text to clipboard. Use navigator.clipboard.writeText if available, otherwise use document.execCommand.
@@ -754,14 +687,7 @@ export function incrementString(str) {
  * @example
  * stringFormat('Hello, {0}!', 'world'); // 'Hello, world!'
  */
-export function stringFormat(format) {
-    const args = Array.prototype.slice.call(arguments, 1);
-    return format.replace(/{(\d+)}/g, function (match, number) {
-        return typeof args[number] != 'undefined'
-            ? args[number]
-            : match;
-    });
-}
+export function stringFormat(...args) { return getTavernStageCore().stringFormat.apply(this, args); }
 
 /**
  * Save the caret position in a contenteditable element.
@@ -866,12 +792,7 @@ export function sortByCssOrder(a, b) {
  * @returns {string} The trimmed string if trimming is enabled; otherwise, returns the original string
  */
 
-export function trimSpaces(input) {
-    if (!input || typeof input !== 'string') {
-        return input;
-    }
-    return power_user.trim_spaces ? input.trim() : input;
-}
+export function trimSpaces(...args) { return getTavernStageCore().trimSpaces.apply(this, args); }
 
 /**
  * Trims a string to the end of a nearest sentence.
@@ -880,36 +801,7 @@ export function trimSpaces(input) {
  * @example
  * trimToEndSentence('Hello, world! I am from'); // 'Hello, world!'
  */
-export function trimToEndSentence(input) {
-    if (!input) {
-        return '';
-    }
-
-    const isEmoji = x => /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu.test(x);
-    const punctuation = new Set(['.', '!', '?', '*', '"', ')', '}', '`', ']', '$', '。', '！', '？', '”', '）', '】', '’', '」', '_']); // extend this as you see fit
-    let last = -1;
-
-    const characters = Array.from(input);
-    for (let i = characters.length - 1; i >= 0; i--) {
-        const char = characters[i];
-        const emoji = isEmoji(char);
-
-        if (punctuation.has(char) || emoji) {
-            if (!emoji && i > 0 && /[\s\n]/.test(characters[i - 1])) {
-                last = i - 1;
-            } else {
-                last = i;
-            }
-            break;
-        }
-    }
-
-    if (last === -1) {
-        return input.trimEnd();
-    }
-
-    return characters.slice(0, last + 1).join('').trimEnd();
-}
+export function trimToEndSentence(...args) { return getTavernStageCore().trimToEndSentence.apply(this, args); }
 
 export function trimToStartSentence(input) {
     if (!input) {
@@ -991,35 +883,21 @@ export function formatTime(seconds) {
  * countOccurrences('Hello, world!', 'l'); // 3
  * countOccurrences('Hello, world!', 'x'); // 0
  */
-export function countOccurrences(string, character) {
-    let count = 0;
-
-    for (let i = 0; i < string.length; i++) {
-        if (string.substring(i, i + character.length) === character) {
-            count++;
-        }
-    }
-
-    return count;
-}
+export function countOccurrences(...args) { return getTavernStageCore().countOccurrences.apply(this, args); }
 
 /**
  * Checks if a string is "true" value.
  * @param {string} arg String to check
  * @returns {boolean} True if the string is true, false otherwise.
  */
-export function isTrueBoolean(arg) {
-    return ['on', 'true', '1'].includes(arg?.trim()?.toLowerCase());
-}
+export function isTrueBoolean(...args) { return getTavernStageCore().isTrueBoolean.apply(this, args); }
 
 /**
  * Checks if a string is "false" value.
  * @param {string} arg String to check
  * @returns {boolean} True if the string is false, false otherwise.
  */
-export function isFalseBoolean(arg) {
-    return ['off', 'false', '0'].includes(arg?.trim()?.toLowerCase());
-}
+export function isFalseBoolean(...args) { return getTavernStageCore().isFalseBoolean.apply(this, args); }
 
 /**
  * Parses an array either as a comma-separated string or as a JSON array.
@@ -1048,9 +926,7 @@ export function parseStringArray(value) {
  * isOdd(3); // true
  * isOdd(4); // false
  */
-export function isOdd(number) {
-    return number % 2 !== 0;
-}
+export function isOdd(...args) { return getTavernStageCore().isOdd.apply(this, args); }
 
 /**
  * Compare two moment objects for sorting.
@@ -1068,7 +944,7 @@ export function sortMoments(a, b) {
     }
 }
 
-const dateCache = new Map();
+const dateCache = getTavernStageCore().dateCache;
 
 /**
  * Cached version of moment() to avoid re-parsing the same date strings.
@@ -1076,75 +952,14 @@ const dateCache = new Map();
  * @param {MessageTimestamp} timestamp String or number representing a date.
  * @returns {import('moment').Moment} Moment object
  */
-export function timestampToMoment(timestamp) {
-    if (dateCache.has(timestamp)) {
-        return dateCache.get(timestamp);
-    }
-
-    const iso8601 = parseTimestamp(timestamp);
-    const objMoment = iso8601 ? moment(iso8601).locale(getCurrentLocale()) : moment.invalid();
-
-    dateCache.set(timestamp, objMoment);
-    return objMoment;
-}
+export function timestampToMoment(...args) { return getTavernStageCore().timestampToMoment.apply(this, args); }
 
 /**
  * Parses a timestamp and returns a moment object representing the parsed date and time.
  * @param {MessageTimestamp} timestamp - The timestamp to parse. It can be a string or a number.
  * @returns {string} - If the timestamp is valid, returns an ISO 8601 string.
  */
-function parseTimestamp(timestamp) {
-    if (!timestamp) return;
-
-    // Date object
-    if (timestamp instanceof Date) {
-        return timestamp.toISOString();
-    }
-
-    // Unix time (legacy TAI / tags)
-    if (typeof timestamp === 'number' || /^\d+$/.test(timestamp)) {
-        const unixTime = Number(timestamp);
-        const isValid = Number.isFinite(unixTime) && !Number.isNaN(unixTime) && unixTime >= 0;
-        if (!isValid) return;
-        return new Date(unixTime).toISOString();
-    }
-
-    // ISO 8601
-    if (moment(timestamp, moment.ISO_8601, true).isValid()) {
-        return timestamp;
-    }
-
-    let dtFmt = [];
-
-    // meridiem-based format
-    const convertFromMeridiemBased = (_, month, day, year, hour, minute, meridiem) => {
-        const monthNum = moment().month(month).format('MM');
-        const hour24 = meridiem.toLowerCase() === 'pm' ? (parseInt(hour, 10) % 12) + 12 : parseInt(hour, 10) % 12;
-        return `${year}-${monthNum}-${day.padStart(2, '0')}T${hour24.toString().padStart(2, '0')}:${minute.padStart(2, '0')}:00`;
-    };
-    // June 19, 2023 2:20pm
-    dtFmt.push({ callback: convertFromMeridiemBased, pattern: /(\w+)\s(\d{1,2}),\s(\d{4})\s(\d{1,2}):(\d{1,2})(am|pm)/i });
-
-    // ST "humanized" format patterns
-    const convertFromHumanized = (_, year, month, day, hour, min, sec, ms) => {
-        ms = typeof ms !== 'undefined' ? `.${ms.padStart(3, '0')}` : '';
-        return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${min.padStart(2, '0')}:${sec.padStart(2, '0')}${ms}Z`;
-    };
-    // 2024-07-12@01h31m37s123ms
-    dtFmt.push({ callback: convertFromHumanized, pattern: /(\d{4})-(\d{1,2})-(\d{1,2})@(\d{1,2})h(\d{1,2})m(\d{1,2})s(\d{1,3})ms/ });
-    // 2024-7-12@01h31m37s
-    dtFmt.push({ callback: convertFromHumanized, pattern: /(\d{4})-(\d{1,2})-(\d{1,2})@(\d{1,2})h(\d{1,2})m(\d{1,2})s/ });
-    // 2024-6-5 @14h 56m 50s 682ms
-    dtFmt.push({ callback: convertFromHumanized, pattern: /(\d{4})-(\d{1,2})-(\d{1,2}) @(\d{1,2})h (\d{1,2})m (\d{1,2})s (\d{1,3})ms/ });
-
-    for (const x of dtFmt) {
-        let rgxMatch = timestamp.match(x.pattern);
-        if (!rgxMatch) continue;
-        return x.callback(...rgxMatch);
-    }
-
-    return;
-}
+function parseTimestamp(...args) { return getTavernStageCore().parseTimestamp.apply(this, args); }
 
 /** Split string to parts no more than length in size.
  * @param {string} input The string to split.
@@ -1375,9 +1190,7 @@ export function extractAllWords(value) {
  * @example
  * escapeRegex('^Hello$'); // '\\^Hello\\$'
  */
-export function escapeRegex(string) {
-    return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
-}
+export function escapeRegex(...args) { return getTavernStageCore().escapeRegex.apply(this, args); }
 
 /**
  * Instantiates a regular expression from a string.
@@ -1385,22 +1198,7 @@ export function escapeRegex(string) {
  * @returns {RegExp} The regular expression instance.
  * @copyright Originally from: https://github.com/IonicaBizau/regex-parser.js/blob/master/lib/index.js
  */
-export function regexFromString(input) {
-    try {
-        // Parse input
-        var m = input.match(/(\/?)(.+)\1([a-z]*)/i);
-
-        // Invalid flags
-        if (m[3] && !/^(?!.*?(.).*?\1)[gmixXsuUAJ]+$/.test(m[3])) {
-            return RegExp(input);
-        }
-
-        // Create the regular expression
-        return new RegExp(m[2], m[3]);
-    } catch {
-        return;
-    }
-}
+export function regexFromString(...args) { return getTavernStageCore().regexFromString.apply(this, args); }
 
 export class Stopwatch {
     /**

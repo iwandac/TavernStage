@@ -1,3 +1,18 @@
+
+// TavernStage shared core. Getters retain this browser host's live state.
+import { createCore as createTavernStageCore } from '../../tavernstage/scripts-macros-definitions-chat-macros.js';
+const generationHost = { readInput: () => String($('#send_textarea').val()), writeInput: value => { $('#send_textarea').val(value)[0].dispatchEvent(new Event('input', { bubbles: true })); }, firstDisplayedMessageId: () => Number(document.querySelector('#chat .mes')?.getAttribute('mesid')), readAuthorNote: () => $('#extension_floating_prompt').val(), presentAuthorNoteCounter: value => $('#extension_floating_counter').text(value) };
+var tavernStageCore;
+function getTavernStageCore() {
+ return tavernStageCore ??= createTavernStageCore({
+  get MacroCategory() { return MacroCategory; },
+  get MacroRegistry() { return MacroRegistry; },
+  get MacroValueType() { return MacroValueType; },
+  get chat() { return chat; },
+  get chat_metadata() { return chat_metadata; },
+  get generationHost() { return generationHost; },
+ });
+}
 import { MacroRegistry, MacroCategory, MacroValueType } from '../engine/MacroRegistry.js';
 import { chat, chat_metadata } from '../../../script.js';
 
@@ -5,144 +20,20 @@ import { chat, chat_metadata } from '../../../script.js';
  * Registers macros that inspect the current chat log and swipe state
  * (message texts, indices, swipes, and context boundaries).
  */
-export function registerChatMacros() {
-    MacroRegistry.registerMacro('lastMessage', {
-        category: MacroCategory.CHAT,
-        description: 'Last message in the chat.',
-        returns: 'Last message in the chat.',
-        handler: () => String(getLastMessage() ?? ''),
-    });
+export function registerChatMacros(...args) { return getTavernStageCore().registerChatMacros.apply(this, args); }
 
-    MacroRegistry.registerMacro('lastMessageId', {
-        category: MacroCategory.CHAT,
-        description: 'Index of the last message in the chat.',
-        returns: 'Index of the last message in the chat.',
-        returnType: MacroValueType.INTEGER,
-        handler: () => String(getLastMessageId() ?? ''),
-    });
+function getLastMessageId(...args) { return getTavernStageCore().getLastMessageId.apply(this, args); }
 
-    MacroRegistry.registerMacro('lastUserMessage', {
-        category: MacroCategory.CHAT,
-        description: 'Last user message in the chat.',
-        returns: 'Last user message in the chat.',
-        handler: () => String(getLastUserMessage() ?? ''),
-    });
+function getLastMessage(...args) { return getTavernStageCore().getLastMessage.apply(this, args); }
 
-    MacroRegistry.registerMacro('lastCharMessage', {
-        category: MacroCategory.CHAT,
-        description: 'Last character/bot message in the chat.',
-        returns: 'Last character/bot message in the chat.',
-        handler: () => String(getLastCharMessage() ?? ''),
-    });
+function getLastUserMessage(...args) { return getTavernStageCore().getLastUserMessage.apply(this, args); }
 
-    MacroRegistry.registerMacro('firstIncludedMessageId', {
-        category: MacroCategory.CHAT,
-        description: 'Index of the first message included in the current context.',
-        returns: 'Index of the first message included in the context.',
-        returnType: MacroValueType.INTEGER,
-        handler: () => String(getFirstIncludedMessageId() ?? ''),
-    });
+function getLastCharMessage(...args) { return getTavernStageCore().getLastCharMessage.apply(this, args); }
 
-    MacroRegistry.registerMacro('firstDisplayedMessageId', {
-        category: MacroCategory.CHAT,
-        description: 'Index of the first displayed message in the chat.',
-        returns: 'Index of the first displayed message in the chat.',
-        returnType: MacroValueType.INTEGER,
-        handler: () => String(getFirstDisplayedMessageId() ?? ''),
-    });
+function getFirstIncludedMessageId(...args) { return getTavernStageCore().getFirstIncludedMessageId.apply(this, args); }
 
-    MacroRegistry.registerMacro('lastSwipeId', {
-        category: MacroCategory.CHAT,
-        description: '1-based index of the last swipe for the last message.',
-        returns: '1-based index of the last swipe.',
-        returnType: MacroValueType.INTEGER,
-        handler: () => String(getLastSwipeId() ?? ''),
-    });
+function getFirstDisplayedMessageId(...args) { return getTavernStageCore().getFirstDisplayedMessageId.apply(this, args); }
 
-    MacroRegistry.registerMacro('currentSwipeId', {
-        category: MacroCategory.CHAT,
-        description: '1-based index of the current swipe.',
-        returns: '1-based index of the current swipe.',
-        returnType: MacroValueType.INTEGER,
-        handler: () => String(getCurrentSwipeId() ?? ''),
-    });
+function getLastSwipeId(...args) { return getTavernStageCore().getLastSwipeId.apply(this, args); }
 
-    MacroRegistry.registerMacro('allChatRange', {
-        category: MacroCategory.CHAT,
-        description: 'Range of all message IDs in the chat (e.g. "0-10"). Empty string if the chat is empty.',
-        returns: 'Range string from 0 to last message ID, or empty string.',
-        handler: () => {
-            if (!Array.isArray(chat) || chat.length === 0) {
-                return '';
-            }
-            return `0-${chat.length - 1}`;
-        },
-    });
-}
-
-function getLastMessageId({ exclude_swipe_in_propress = true, filter = null } = {}) {
-    if (!Array.isArray(chat) || chat.length === 0) {
-        return null;
-    }
-
-    for (let i = chat.length - 1; i >= 0; i--) {
-        const message = chat[i];
-
-        if (exclude_swipe_in_propress && message.swipes && message.swipe_id >= message.swipes.length) {
-            continue;
-        }
-
-        if (!filter || filter(message)) {
-            return i;
-        }
-    }
-
-    return null;
-}
-
-function getLastMessage() {
-    const mid = getLastMessageId();
-    return typeof mid === 'number' ? (chat[mid]?.mes ?? '') : '';
-}
-
-function getLastUserMessage() {
-    const mid = getLastMessageId({ filter: m => m.is_user && !m.is_system });
-    return typeof mid === 'number' ? (chat[mid]?.mes ?? '') : '';
-}
-
-function getLastCharMessage() {
-    const mid = getLastMessageId({ filter: m => !m.is_user && !m.is_system });
-    return typeof mid === 'number' ? (chat[mid]?.mes ?? '') : '';
-}
-
-function getFirstIncludedMessageId() {
-    const value = chat_metadata.lastInContextMessageId;
-    return typeof value === 'number' ? value : null;
-}
-
-function getFirstDisplayedMessageId() {
-    const mesElement = document.querySelector('#chat .mes');
-    const mesId = Number(mesElement?.getAttribute('mesid'));
-    if (!Number.isNaN(mesId) && mesId >= 0) {
-        return mesId;
-    }
-    return null;
-}
-
-function getLastSwipeId() {
-    const mid = getLastMessageId({ exclude_swipe_in_propress: false });
-    if (typeof mid !== 'number') {
-        return null;
-    }
-    const swipes = chat[mid]?.swipes;
-    return Array.isArray(swipes) ? swipes.length : null;
-}
-
-function getCurrentSwipeId() {
-    const mid = getLastMessageId({ exclude_swipe_in_propress: false });
-    if (typeof mid !== 'number') {
-        return null;
-    }
-    const swipeId = chat[mid]?.swipe_id;
-    return typeof swipeId === 'number' ? swipeId + 1 : null;
-}
+function getCurrentSwipeId(...args) { return getTavernStageCore().getCurrentSwipeId.apply(this, args); }

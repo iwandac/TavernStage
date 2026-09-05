@@ -1,3 +1,27 @@
+
+// TavernStage shared core. Getters retain this browser host's live state.
+import { createCore as createTavernStageCore } from './tavernstage/scripts-reasoning.js';
+var tavernStageCore;
+function getTavernStageCore() {
+ return tavernStageCore ??= createTavernStageCore({
+  get MacroCategory() { return MacroCategory; },
+  get chat_completion_sources() { return chat_completion_sources; },
+  get console() { return console; },
+  get escapeRegex() { return escapeRegex; },
+  get getRegexedString() { return getRegexedString; },
+  get macros() { return macros; },
+  get main_api() { return main_api; },
+  get oai_settings() { return oai_settings; },
+  get power_user() { return power_user; },
+  get reasoning_templates() { return reasoning_templates; },
+  get regex_placement() { return regex_placement; },
+  get substituteParams() { return substituteParams; },
+  get t() { return t; },
+  get textgen_types() { return textgen_types; },
+  get textgenerationwebui_settings() { return textgenerationwebui_settings; },
+  get trimSpaces() { return trimSpaces; },
+ });
+}
 import {
     moment,
 } from '../lib.js';
@@ -54,12 +78,7 @@ const UI = {
  * @readonly
  * @enum {string}
  */
-export const ReasoningType = {
-    Model: 'model',
-    Parsed: 'parsed',
-    Manual: 'manual',
-    Edited: 'edited',
-};
+export const ReasoningType = getTavernStageCore().ReasoningType;
 
 /**
  * Gets a message from a jQuery element.
@@ -90,62 +109,7 @@ function toggleReasoningAutoExpand() {
  * @param {object} data Response data
  * @returns {string} Extracted reasoning
  */
-export function extractReasoningFromData(data, {
-    mainApi = null,
-    ignoreShowThoughts = false,
-    textGenType = null,
-    chatCompletionSource = null,
-} = {}) {
-    switch (mainApi ?? main_api) {
-        case 'textgenerationwebui':
-            switch (textGenType ?? textgenerationwebui_settings.type) {
-                case textgen_types.OPENROUTER:
-                    return data?.choices?.[0]?.reasoning ?? '';
-                case textgen_types.OLLAMA:
-                    return data?.thinking ?? '';
-            }
-            break;
-
-        case 'openai':
-            if (!ignoreShowThoughts && !oai_settings.show_thoughts) break;
-
-            switch (chatCompletionSource ?? oai_settings.chat_completion_source) {
-                case chat_completion_sources.DEEPSEEK:
-                    return data?.choices?.[0]?.message?.reasoning_content ?? '';
-                case chat_completion_sources.XAI:
-                    return data?.choices?.[0]?.message?.reasoning_content ?? '';
-                case chat_completion_sources.OPENROUTER:
-                    return data?.choices?.[0]?.message?.reasoning
-                        ?? data?.choices?.[0]?.message?.reasoning_content
-                        ?? '';
-                case chat_completion_sources.MAKERSUITE:
-                case chat_completion_sources.VERTEXAI:
-                    return data?.responseContent?.parts?.filter(part => part.thought)?.map(part => part.text)?.join('\n\n') ?? '';
-                case chat_completion_sources.CLAUDE:
-                    return data?.content?.filter(part => part.type === 'thinking')?.map(part => part.thinking)?.join('\n\n') ?? '';
-                case chat_completion_sources.MISTRALAI:
-                    return data?.choices?.[0]?.message?.content?.[0]?.thinking?.map(part => part.text)?.filter(x => x)?.join('\n\n') ?? '';
-                case chat_completion_sources.AIMLAPI:
-                case chat_completion_sources.POLLINATIONS:
-                case chat_completion_sources.MOONSHOT:
-                case chat_completion_sources.COMETAPI:
-                case chat_completion_sources.CHUTES:
-                case chat_completion_sources.ELECTRONHUB:
-                case chat_completion_sources.NANOGPT:
-                case chat_completion_sources.SILICONFLOW:
-                case chat_completion_sources.ZAI:
-                case chat_completion_sources.WORKERS_AI:
-                case chat_completion_sources.CUSTOM: {
-                    return data?.choices?.[0]?.message?.reasoning_content
-                        ?? data?.choices?.[0]?.message?.reasoning
-                        ?? '';
-                }
-            }
-            break;
-    }
-
-    return '';
-}
+export function extractReasoningFromData(...args) { return getTavernStageCore().extractReasoningFromData.apply(this, args); }
 
 /**
  * Extracts encrypted reasoning signature from the response data.
@@ -156,43 +120,7 @@ export function extractReasoningFromData(data, {
  * @param {string|null} [options.chatCompletionSource] Override for chat completion source
  * @returns {string?} Encrypted signature of the reasoning text
  */
-export function extractReasoningSignatureFromData(data, {
-    mainApi = null,
-    chatCompletionSource = null,
-} = {}) {
-    // Only Gemini models use thought signatures (via MakerSuite/VertexAI or OpenRouter)
-    if ((mainApi ?? main_api) !== 'openai') {
-        return null;
-    }
-
-    const source = chatCompletionSource ?? oai_settings.chat_completion_source;
-    const isGemini = source === chat_completion_sources.MAKERSUITE || source === chat_completion_sources.VERTEXAI;
-    const isOpenRouter = source === chat_completion_sources.OPENROUTER;
-
-    if (!isGemini && !isOpenRouter) {
-        return null;
-    }
-
-    // OpenRouter format: reasoning_details array with type "reasoning.encrypted" (exclude tool calls)
-    if (isOpenRouter && Array.isArray(data?.choices?.[0]?.message?.reasoning_details)) {
-        for (const detail of data.choices[0].message.reasoning_details) {
-            if (!/^tool_/.test(detail.id) && detail.type === 'reasoning.encrypted' && detail.data) {
-                return detail.data;
-            }
-        }
-    }
-
-    // Direct Gemini format: Extract from responseContent.parts if available (only text parts)
-    if (isGemini && Array.isArray(data?.responseContent?.parts)) {
-        data.responseContent.parts.forEach((part) => {
-            if (part.thoughtSignature && typeof part.text === 'string') {
-                return part.thoughtSignature;
-            }
-        });
-    }
-
-    return null;
-}
+export function extractReasoningSignatureFromData(...args) { return getTavernStageCore().extractReasoningSignatureFromData.apply(this, args); }
 
 /**
  * Check if the model supports reasoning, but does not send back the reasoning
@@ -642,135 +570,7 @@ export class ReasoningHandler {
  * Helper class for adding reasoning to messages.
  * Keeps track of the number of reasoning additions.
  */
-export class PromptReasoning {
-    /**
-     * An instance initiated during the latest prompt processing.
-     * @type {PromptReasoning}
-     * */
-    static #LATEST = null;
-    /**
-     * @readonly Zero-width space character used as a placeholder for reasoning.
-     * @type {string}
-    */
-    static REASONING_PLACEHOLDER = '\u200B';
-
-    /**
-     * Returns the latest formatted reasoning prefix if the prefix is incomplete.
-     * @returns {string} Formatted reasoning prefix
-     */
-    static getLatestPrefix() {
-        if (!PromptReasoning.#LATEST) {
-            return '';
-        }
-
-        if (!PromptReasoning.#LATEST.prefixIncomplete) {
-            return '';
-        }
-
-        return PromptReasoning.#LATEST.prefixReasoningFormatted;
-    }
-
-    /**
-     * Free the latest reasoning instance.
-     * To be called when the generation has ended or stopped.
-     */
-    static clearLatest() {
-        PromptReasoning.#LATEST = null;
-    }
-
-    constructor() {
-        PromptReasoning.#LATEST = this;
-
-        /** @type {number} */
-        this.counter = 0;
-        /** @type {number} */
-        this.prefixLength = -1;
-        /** @type {string} */
-        this.prefixReasoning = '';
-        /** @type {string} */
-        this.prefixReasoningFormatted = '';
-        /** @type {number?} */
-        this.prefixDuration = null;
-        /** @type {boolean} */
-        this.prefixIncomplete = false;
-    }
-
-    /**
-     * Checks if the limit of reasoning additions has been reached.
-     * @returns {boolean} True if the limit of reasoning additions has been reached, false otherwise.
-     */
-    isLimitReached() {
-        if (!power_user.reasoning.add_to_prompts) {
-            return true;
-        }
-
-        return this.counter >= power_user.reasoning.max_additions;
-    }
-
-    /**
-     * Add reasoning to a message according to the power user settings.
-     * @param {string} content Message content
-     * @param {string} reasoning Message reasoning
-     * @param {boolean} isPrefix Whether this is the last message prefix
-     * @param {number?} duration Duration of the reasoning
-     * @returns {string} Message content with reasoning
-     */
-    addToMessage(content, reasoning, isPrefix, duration) {
-        // Disabled or reached limit of additions
-        if (!isPrefix && (!power_user.reasoning.add_to_prompts || this.counter >= power_user.reasoning.max_additions)) {
-            return content;
-        }
-
-        // No reasoning provided or a legacy placeholder
-        if (!reasoning || reasoning === PromptReasoning.REASONING_PLACEHOLDER) {
-            return content;
-        }
-
-        // Increment the counter
-        this.counter++;
-
-        // Substitute macros in variable parts
-        const prefix = substituteParams(power_user.reasoning.prefix || '');
-        const separator = substituteParams(power_user.reasoning.separator || '');
-        const suffix = substituteParams(power_user.reasoning.suffix || '');
-
-        // Combine parts with reasoning only
-        if (isPrefix && !content) {
-            const formattedReasoning = `${prefix}${reasoning}`;
-            if (isPrefix) {
-                this.prefixReasoning = reasoning;
-                this.prefixReasoningFormatted = formattedReasoning;
-                this.prefixLength = formattedReasoning.length;
-                this.prefixDuration = duration;
-                this.prefixIncomplete = true;
-            }
-            return formattedReasoning;
-        }
-
-        // Combine parts with reasoning and content
-        const formattedReasoning = `${prefix}${reasoning}${suffix}${separator}`;
-        if (isPrefix) {
-            this.prefixReasoning = reasoning;
-            this.prefixReasoningFormatted = formattedReasoning;
-            this.prefixLength = formattedReasoning.length;
-            this.prefixDuration = duration;
-            this.prefixIncomplete = false;
-        }
-        return `${formattedReasoning}${content}`;
-    }
-
-    /**
-     * Removes the reasoning prefix from the content.
-     * @param {string} content Content with the reasoning prefix
-     * @returns {string} Content without the reasoning prefix
-     */
-    removePrefix(content) {
-        if (this.prefixLength > 0) {
-            return content.slice(this.prefixLength);
-        }
-        return content;
-    }
-}
+export const PromptReasoning = getTavernStageCore().PromptReasoning;
 
 function loadReasoningSettings() {
     UI.$addToPrompts.prop('checked', power_user.reasoning.add_to_prompts);
@@ -1160,23 +960,7 @@ function registerReasoningSlashCommands() {
     }));
 }
 
-function registerReasoningMacros() {
-    macros.register('reasoningPrefix', {
-        category: MacroCategory.PROMPTS,
-        description: t`The prefix string used before reasoning blocks`,
-        handler: () => power_user.reasoning.prefix,
-    });
-    macros.register('reasoningSuffix', {
-        category: MacroCategory.PROMPTS,
-        description: t`The suffix string used after reasoning blocks`,
-        handler: () => power_user.reasoning.suffix,
-    });
-    macros.register('reasoningSeparator', {
-        category: MacroCategory.PROMPTS,
-        description: t`The separator between thinking content and response`,
-        handler: () => power_user.reasoning.separator,
-    });
-}
+function registerReasoningMacros(...args) { return getTavernStageCore().registerReasoningMacros.apply(this, args); }
 
 function setReasoningEventHandlers() {
     /**
@@ -1401,11 +1185,7 @@ export function removeReasoningFromString(str) {
  * @returns {ReasoningTemplate} the reasoning template object
  * @throws {Error}
  */
-export function getReasoningTemplateByName(name) {
-    const template = reasoning_templates.find(p => p.name === name);
-    if (!template) throw new Error(`Unknown reasoning template name: "${name}"`);
-    return template;
-}
+export function getReasoningTemplateByName(...args) { return getTavernStageCore().getReasoningTemplateByName.apply(this, args); }
 
 /**
  * Parses reasoning from a string using the power user reasoning settings or optional template.
@@ -1418,36 +1198,7 @@ export function getReasoningTemplateByName(name) {
  * @param {ReasoningTemplate} template Optional reasoning template to use instead of power_user.reasoning
  * @returns {ParsedReasoning|null} Parsed reasoning block and message content
  */
-export function parseReasoningFromString(str, { strict = true } = {}, template = null) {
-    template = template ?? power_user.reasoning;  // if no template given, use the currently selected template
-
-    // Both prefix and suffix must be defined
-    if (!template.prefix || !template.suffix) {
-        return null;
-    }
-
-    try {
-        const regex = new RegExp(`${(strict ? '^\\s*?' : '')}${escapeRegex(template.prefix)}(.*?)${escapeRegex(template.suffix)}`, 's');
-
-        let didReplace = false;
-        let reasoning = '';
-        let content = String(str).replace(regex, (_match, captureGroup) => {
-            didReplace = true;
-            reasoning = captureGroup;
-            return '';
-        });
-
-        if (didReplace) {
-            reasoning = trimSpaces(reasoning);
-            content = trimSpaces(content);
-        }
-
-        return { reasoning, content };
-    } catch (error) {
-        console.error('[Reasoning] Error parsing reasoning block', error);
-        return null;
-    }
-}
+export function parseReasoningFromString(...args) { return getTavernStageCore().parseReasoningFromString.apply(this, args); }
 
 /**
  * Formats reasoning and content into a string using the reasoning template.
@@ -1490,26 +1241,7 @@ export function formatReasoning(reasoning, content, template = null) {
  * @property {string} reasoning_type Type of reasoning block
  * @property {string?} reasoning_signature Encrypted signature of the reasoning text
  */
-export function parseReasoningInSwipes(swipes, swipeInfoArray, duration) {
-    if (!power_user.reasoning.auto_parse) {
-        return;
-    }
-
-    // Something ain't right, don't parse
-    if (!Array.isArray(swipes) || !Array.isArray(swipeInfoArray) || swipes.length !== swipeInfoArray.length) {
-        return;
-    }
-
-    for (let index = 0; index < swipes.length; index++) {
-        const parsedReasoning = parseReasoningFromString(swipes[index]);
-        if (parsedReasoning) {
-            swipes[index] = getRegexedString(parsedReasoning.content, regex_placement.REASONING);
-            swipeInfoArray[index].extra.reasoning = parsedReasoning.reasoning;
-            swipeInfoArray[index].extra.reasoning_duration = duration;
-            swipeInfoArray[index].extra.reasoning_type = ReasoningType.Parsed;
-        }
-    }
-}
+export function parseReasoningInSwipes(...args) { return getTavernStageCore().parseReasoningInSwipes.apply(this, args); }
 
 function registerReasoningAppEvents() {
     const eventHandler = (/** @type {string} */ type, /** @type {number} */ idx) => {

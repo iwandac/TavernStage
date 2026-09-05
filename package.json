@@ -120,6 +120,8 @@
     "version": "1.18.0",
     "scripts": {
         "check:tavernstage": "node scripts/tavernstage/check-project.mjs",
+        "check:extraction": "node scripts/tavernstage/extract-core.cjs --check && node scripts/tavernstage/extract-modern-engine.cjs --check",
+        "test:tavernstage": "node --test tests/tavernstage/*.test.mjs",
         "init": "node src/server-init.js",
         "start": "node server.js",
         "debug": "node --inspect server.js",

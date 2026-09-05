@@ -1,3 +1,163 @@
+
+// TavernStage shared core. Getters retain this browser host's live state.
+import { createCore as createTavernStageCore } from './scripts/tavernstage/script.js';
+const generationHost = { readInput: () => String($('#send_textarea').val()), writeInput: value => { $('#send_textarea').val(value)[0].dispatchEvent(new Event('input', { bubbles: true })); }, firstDisplayedMessageId: () => Number(document.querySelector('#chat .mes')?.getAttribute('mesid')), readAuthorNote: () => $('#extension_floating_prompt').val(), presentAuthorNoteCounter: value => $('#extension_floating_counter').text(value), presentContextCount: count => { chatElement.find('.mes').removeClass('lastInContext'); const lastMessageBlock = chatElement.find('.mes:not([is_system="true"]), .mes.toolCall').eq(-count); lastMessageBlock.addClass('lastInContext'); if (lastMessageBlock.length === 0) { const firstMessageId = getFirstDisplayedMessageId(); chatElement.find(`.mes[mesid="${firstMessageId}"]`).addClass('lastInContext'); } } };
+var tavernStageCore;
+function getTavernStageCore() {
+ return tavernStageCore ??= createTavernStageCore({
+  get Date() { return Date; },
+  get GENERATION_TYPE_TRIGGERS() { return GENERATION_TYPE_TRIGGERS; },
+  get Handlebars() { return Handlebars; },
+  get MAX_INJECTION_DEPTH() { return MAX_INJECTION_DEPTH; },
+  get MEDIA_DISPLAY() { return MEDIA_DISPLAY; },
+  get MIN_LENGTH() { return MIN_LENGTH; },
+  get MacroEngine() { return MacroEngine; },
+  get MacroEnvBuilder() { return MacroEnvBuilder; },
+  get Math() { return Math; },
+  get NOTE_MODULE_NAME() { return NOTE_MODULE_NAME; },
+  get PromptReasoning() { return PromptReasoning; },
+  get SWIPE_DIRECTION() { return SWIPE_DIRECTION; },
+  get SWIPE_SOURCE() { return SWIPE_SOURCE; },
+  get StreamingProcessor() { return StreamingProcessor; },
+  get ToolManager() { return ToolManager; },
+  get abortController() { return abortController; }, set abortController(value) { abortController = value; },
+  get accountStorage() { return accountStorage; },
+  get addOneMessage() { return addOneMessage; },
+  get adjustHordeGenerationParams() { return adjustHordeGenerationParams; },
+  get adjustNovelInstructionPrompt() { return adjustNovelInstructionPrompt; },
+  get amount_gen() { return amount_gen; },
+  get appendFileContent() { return appendFileContent; },
+  get characters() { return characters; },
+  get chat() { return chat; },
+  get chat_completion_sources() { return chat_completion_sources; },
+  get chat_metadata() { return chat_metadata; },
+  get cleanGroupMessage() { return cleanGroupMessage; },
+  get collapseNewlines() { return collapseNewlines; },
+  get console() { return console; },
+  get deactivateSendButtons() { return deactivateSendButtons; },
+  get deleteItemizedPromptForMessage() { return deleteItemizedPromptForMessage; },
+  get deleteLastMessage() { return deleteLastMessage; },
+  get depth_prompt_depth_default() { return depth_prompt_depth_default; },
+  get depth_prompt_role_default() { return depth_prompt_role_default; },
+  get escapeRegex() { return escapeRegex; },
+  get evaluateMacros() { return evaluateMacros; },
+  get eventSource() { return eventSource; },
+  get event_types() { return event_types; },
+  get extension_prompts() { return extension_prompts; },
+  get extension_settings() { return extension_settings; },
+  get extractJsonFromData() { return extractJsonFromData; },
+  get extractReasoningFromData() { return extractReasoningFromData; },
+  get extractReasoningSignatureFromData() { return extractReasoningSignatureFromData; },
+  get fixMarkdown() { return fixMarkdown; },
+  get force_output_sequence() { return force_output_sequence; },
+  get formatInstructModeChat() { return formatInstructModeChat; },
+  get formatInstructModeExamples() { return formatInstructModeExamples; },
+  get formatInstructModePrompt() { return formatInstructModePrompt; },
+  get formatInstructModeStoryString() { return formatInstructModeStoryString; },
+  get formatMessageHistoryItem() { return formatMessageHistoryItem; },
+  get generateGroupWrapper() { return generateGroupWrapper; },
+  get generatedTextFiltered() { return generatedTextFiltered; },
+  get generationHost() { return generationHost; },
+  get generation_started() { return generation_started; }, set generation_started(value) { generation_started = value; },
+  get getCfgPrompt() { return getCfgPrompt; },
+  get getChatCompletionModel() { return getChatCompletionModel; },
+  get getCustomStoppingStrings() { return getCustomStoppingStrings; },
+  get getFriendlyTokenizerName() { return getFriendlyTokenizerName; },
+  get getGroupCharacterCardsLazy() { return getGroupCharacterCardsLazy; },
+  get getGroupDepthPrompts() { return getGroupDepthPrompts; },
+  get getGuidanceScale() { return getGuidanceScale; },
+  get getInstructStoppingSequences() { return getInstructStoppingSequences; },
+  get getKayraMaxContextTokens() { return getKayraMaxContextTokens; },
+  get getKoboldGenerationData() { return getKoboldGenerationData; },
+  get getMessageTimeStamp() { return getMessageTimeStamp; },
+  get getNovelGenerationData() { return getNovelGenerationData; },
+  get getPresetManager() { return getPresetManager; },
+  get getRegexedString() { return getRegexedString; },
+  get getTextGenGenerationData() { return getTextGenGenerationData; },
+  get getThumbnailUrl() { return getThumbnailUrl; },
+  get getTokenCountAsync() { return getTokenCountAsync; },
+  get getWorldInfoPrompt() { return getWorldInfoPrompt; },
+  get group_generation_id() { return group_generation_id; },
+  get groups() { return groups; },
+  get hasPendingFileAttachment() { return hasPendingFileAttachment; },
+  get hideSwipeButtons() { return hideSwipeButtons; },
+  get horde_settings() { return horde_settings; },
+  get inject_ids() { return inject_ids; },
+  get isDataURL() { return isDataURL; },
+  get isHordeGenerationNotAllowed() { return isHordeGenerationNotAllowed; },
+  get isStreamingEnabled() { return isStreamingEnabled; },
+  get is_group_generating() { return is_group_generating; },
+  get is_send_press() { return is_send_press; }, set is_send_press(value) { is_send_press = value; },
+  get itemizedPrompts() { return itemizedPrompts; },
+  get kai_flags() { return kai_flags; },
+  get kai_settings() { return kai_settings; },
+  get kobold_horde_model() { return kobold_horde_model; }, set kobold_horde_model(value) { kobold_horde_model = value; },
+  get koboldai_setting_names() { return koboldai_setting_names; },
+  get koboldai_settings() { return koboldai_settings; },
+  get main_api() { return main_api; },
+  get max_context() { return max_context; },
+  get menu_type() { return menu_type; },
+  get metadata_keys() { return metadata_keys; },
+  get nai_settings() { return nai_settings; },
+  get name1() { return name1; },
+  get name2() { return name2; },
+  get novelai_setting_names() { return novelai_setting_names; },
+  get novelai_settings() { return novelai_settings; },
+  get oai_settings() { return oai_settings; },
+  get onboardingExperimentalMacroEngine() { return onboardingExperimentalMacroEngine; },
+  get online_status() { return online_status; },
+  get onlyUnique() { return onlyUnique; },
+  get openai_messages_count() { return openai_messages_count; },
+  get parseAndSaveLogprobs() { return parseAndSaveLogprobs; },
+  get parseReasoningInSwipes() { return parseReasoningInSwipes; },
+  get parseTokenCounts() { return parseTokenCounts; },
+  get persona_description_positions() { return persona_description_positions; },
+  get pingServer() { return pingServer; },
+  get playMessageSound() { return playMessageSound; },
+  get populateFileAttachment() { return populateFileAttachment; },
+  get power_user() { return power_user; },
+  get prepareOpenAIMessages() { return prepareOpenAIMessages; },
+  get processCommands() { return processCommands; },
+  get processImageAttachment() { return processImageAttachment; },
+  get regex_placement() { return regex_placement; },
+  get reloadCurrentChat() { return reloadCurrentChat; },
+  get removeLastMessage() { return removeLastMessage; },
+  get renderStoryString() { return renderStoryString; },
+  get runGenerationInterceptors() { return runGenerationInterceptors; },
+  get saveChatConditional() { return saveChatConditional; },
+  get selected_group() { return selected_group; },
+  get sendGenerationRequest() { return sendGenerationRequest; },
+  get sendStreamingRequest() { return sendStreamingRequest; },
+  get sendSystemMessage() { return sendSystemMessage; },
+  get setCharacterId() { return setCharacterId; },
+  get setCharacterName() { return setCharacterName; },
+  get setFloatingPrompt() { return setFloatingPrompt; },
+  get setGenerationProgress() { return setGenerationProgress; },
+  get setOpenAIMessageExamples() { return setOpenAIMessageExamples; },
+  get setOpenAIMessages() { return setOpenAIMessages; },
+  get shiftDownByOne() { return shiftDownByOne; },
+  get shiftUpByOne() { return shiftUpByOne; },
+  get shouldWIAddPrompt() { return shouldWIAddPrompt; },
+  get showStopButton() { return showStopButton; },
+  get statMesProcess() { return statMesProcess; },
+  get streamingProcessor() { return streamingProcessor; }, set streamingProcessor(value) { streamingProcessor = value; },
+  get structuredClone() { return structuredClone; },
+  get swipe() { return swipe; },
+  get system_message_types() { return system_message_types; },
+  get t() { return t; },
+  get textgen_settings() { return textgen_settings; },
+  get textgen_types() { return textgen_types; },
+  get this_chid() { return this_chid; },
+  get toastr() { return toastr; },
+  get triggerAutoContinue() { return triggerAutoContinue; },
+  get trimToEndSentence() { return trimToEndSentence; },
+  get unblockGeneration() { return unblockGeneration; },
+  get unshallowCharacter() { return unshallowCharacter; },
+  get user_avatar() { return user_avatar; },
+  get wi_anchor_position() { return wi_anchor_position; },
+  get world_info_include_names() { return world_info_include_names; },
+ });
+}
 import {
     showdown,
     moment,
@@ -480,21 +640,12 @@ export const printCharactersDebounced = debounce(() => { printCharacters(false);
 /**
  * @enum {number} Extension prompt types
  */
-export const extension_prompt_types = {
-    NONE: -1,
-    IN_PROMPT: 0,
-    IN_CHAT: 1,
-    BEFORE_PROMPT: 2,
-};
+export const extension_prompt_types = getTavernStageCore().extension_prompt_types;
 
 /**
  * @enum {number} Extension prompt roles
  */
-export const extension_prompt_roles = {
-    SYSTEM: 0,
-    USER: 1,
-    ASSISTANT: 2,
-};
+export const extension_prompt_roles = getTavernStageCore().extension_prompt_roles;
 
 export const MAX_INJECTION_DEPTH = 10000;
 
@@ -2127,26 +2278,14 @@ export function ensureMessageMediaIsArray(mes) {
  * @param {ChatMessage} mes Message object
  * @returns {MEDIA_DISPLAY} Media display setting
  */
-export function getMediaDisplay(mes) {
-    const value = mes?.extra?.media_display || power_user.media_display || MEDIA_DISPLAY.LIST;
-    return Object.values(MEDIA_DISPLAY).includes(value) ? value : MEDIA_DISPLAY.LIST;
-}
+export function getMediaDisplay(...args) { return getTavernStageCore().getMediaDisplay.apply(this, args); }
 
 /**
  * Gets the media index for a message.
  * @param {ChatMessage} mes Message object
  * @returns {number} Media index
  */
-export function getMediaIndex(mes) {
-    if (!Array.isArray(mes?.extra?.media)) {
-        return 0;
-    }
-    const value = mes.extra?.media_index;
-    if (isNaN(value) || value < 0 || value >= mes.extra.media.length) {
-        return 0;
-    }
-    return value;
-}
+export function getMediaIndex(...args) { return getTavernStageCore().getMediaIndex.apply(this, args); }
 
 /**
  * Appends image or file to the message element.
@@ -2753,9 +2892,7 @@ export function scrollChatToBottom({ waitForFrame } = {}) {
  * Substitutes {{macro}} parameters in a string.
  * @returns {string} The string with substituted parameters.
  */
-export function substituteParamsExtended(content, additionalMacro = {}, postProcessFn = (x) => x) {
-    return substituteParams(content, { dynamicMacros: additionalMacro, postProcessFn });
-}
+export function substituteParamsExtended(...args) { return getTavernStageCore().substituteParamsExtended.apply(this, args); }
 
 /**
  * Substitutes {{macro}} parameters in a string.
@@ -2769,137 +2906,7 @@ export function substituteParamsExtended(content, additionalMacro = {}, postProc
  * @param {(x: string) => string} [postProcessFn] - Post-processing function for each substituted macro.
  * @returns {string} The string with substituted parameters.
  */
-export function substituteParamsLegacy(content, _name1, _name2, _original, _group, _replaceCharacterCard = true, additionalMacro = {}, postProcessFn = (x) => x) {
-    if (!content) {
-        return '';
-    }
-
-    // If experimental macro engine is enabled, use it. This code will be cleaned up in the future.
-    if (power_user?.experimental_macro_engine) {
-        return substituteParams(content, {
-            name1Override: _name1,
-            name2Override: _name2,
-            original: _original,
-            groupOverride: _group,
-            replaceCharacterCard: _replaceCharacterCard ?? true,
-            dynamicMacros: additionalMacro ?? {},
-            postProcessFn: postProcessFn ?? ((x) => x),
-        });
-    }
-
-    // Try to roughly detect experimental macro features to show the onboarding if needed.
-    // This does not have to be 100% accurate, only best effort what we can quickly check.
-    // Only do this if the warning wasn't shown yet, to prevent needless regex checks.
-    if (accountStorage.getItem('slash_command_experimental_engine_warning_shown') !== 'true') {
-        let feature = /** @type {string|null} */ (null);
-        if (/{{\s*if/.test(content)) feature = '{{if}} macro';
-        else if (/{{\s*\//.test(content)) feature = 'scoped macro';
-        else if (/{{\s*[!?~#/]/.test(content)) feature = 'macro flags';
-        else if (/{{\s*[.$]/.test(content)) feature = 'variable shorthands';
-        else if (/\{\{(?:(?!\}\}).)*\{\{(?=[\s\S]*?\}\}[\s\S]*?\}\})/.test(content)) feature = 'nested macro';
-        else if (/{{(?:greeting|charFirstMessage)(?:::\d+)?}}/i.test(content)) feature = 'greeting macro';
-
-        if (feature) void onboardingExperimentalMacroEngine(feature);
-    }
-
-    const environment = {};
-
-    if (typeof _original === 'string') {
-        let originalSubstituted = false;
-        environment.original = () => {
-            if (originalSubstituted) {
-                return '';
-            }
-
-            originalSubstituted = true;
-            return _original;
-        };
-    }
-
-    const getGroupValue = (includeMuted) => {
-        if (typeof _group === 'string') {
-            return _group;
-        }
-
-        if (selected_group) {
-            const members = groups.find(x => x.id === selected_group)?.members;
-            /** @type {string[]} */
-            const disabledMembers = groups.find(x => x.id === selected_group)?.disabled_members ?? [];
-            const isMuted = x => includeMuted ? true : !disabledMembers.includes(x);
-            const names = Array.isArray(members)
-                ? members.filter(isMuted).map(m => characters.find(c => c.avatar === m)?.name).filter(Boolean).join(', ')
-                : '';
-            return names;
-        } else {
-            return _name2 ?? name2;
-        }
-    };
-
-    const getNotCharValue = () => {
-        const currentUser = _name1 ?? name1;
-        const currentSpeaker = _name2 ?? name2;
-
-        // Single character chat
-        if (!selected_group) {
-            return currentUser;
-        }
-
-        // Group chat
-        const members = groups.find(x => x.id === selected_group)?.members;
-
-        if (!Array.isArray(members)) {
-            return currentUser;
-        }
-
-        const memberNames = members
-            .map(m => characters.find(c => c.avatar === m)?.name)
-            .filter(Boolean); // Filter out any null/undefined names
-
-        // Filter out the current speaker and add the user
-        const otherMembers = memberNames.filter(name => name !== currentSpeaker);
-        otherMembers.push(currentUser);
-
-        return otherMembers.join(', ');
-    };
-
-    if (_replaceCharacterCard) {
-        const fields = getCharacterCardFields();
-        environment.charPrompt = fields.system || '';
-        environment.charInstruction = environment.charJailbreak = fields.jailbreak || '';
-        environment.description = fields.description || '';
-        environment.personality = fields.personality || '';
-        environment.scenario = fields.scenario || '';
-        environment.persona = fields.persona || '';
-        environment.mesExamples = () => {
-            const isInstruct = power_user.instruct.enabled && main_api !== 'openai';
-            const mesExamplesArray = parseMesExamples(fields.mesExamples, isInstruct);
-            if (isInstruct) {
-                const instructExamples = formatInstructModeExamples(mesExamplesArray, name1, name2);
-                return instructExamples.join('');
-            }
-            return mesExamplesArray.join('');
-        };
-        environment.mesExamplesRaw = fields.mesExamples || '';
-        environment.charVersion = fields.version || '';
-        environment.char_version = fields.version || '';
-        environment.charDepthPrompt = fields.charDepthPrompt || '';
-        environment.creatorNotes = fields.creatorNotes || '';
-    }
-
-    // Must be substituted last so that they're replaced inside {{description}}
-    environment.user = _name1 ?? name1;
-    environment.char = _name2 ?? name2;
-    environment.group = environment.charIfNotGroup = getGroupValue(true);
-    environment.groupNotMuted = getGroupValue(false);
-    environment.notChar = getNotCharValue();
-    environment.model = getGeneratingModel();
-
-    if (additionalMacro && typeof additionalMacro === 'object') {
-        Object.assign(environment, additionalMacro);
-    }
-
-    return evaluateMacros(content, environment, postProcessFn);
-}
+export function substituteParamsLegacy(...args) { return getTavernStageCore().substituteParamsLegacy.apply(this, args); }
 
 /** @typedef {import('./scripts/macros/engine/MacroRegistry.js').MacroHandler} MacroHandler */
 
@@ -2919,41 +2926,7 @@ export function substituteParamsLegacy(content, _name1, _name2, _original, _grou
  * @param {(x: string) => string} [options.postProcessFn=(x) => x] - Post-processing function for each substituted macro.
  * @returns {string} The string with substituted parameters.
  */
-export function substituteParams(content, options = {}) {
-    if (!content) return '';
-
-    if (typeof content !== 'string') {
-        console.warn('substituteParams: content will be coerced to string', content);
-        content = String(content);
-    }
-
-    // Handle legacy signature calls to substituteParams
-    // We'll simply re-route them to a temporary legacy function. In the future, we'll remove this and cleanly build the options object ourselves.
-    const isOptionsObject = options && typeof options === 'object' && !Array.isArray(options);
-    if (!isOptionsObject) {
-        return substituteParamsLegacy.call(this, ...arguments);
-    }
-
-    // Keep the new macro engine behind a feature switch for now
-    if (!power_user?.experimental_macro_engine) {
-        return substituteParamsLegacy(content, options.name1Override, options.name2Override, options.original, options.groupOverride, options.replaceCharacterCard, options.dynamicMacros, options.postProcessFn);
-    }
-
-    const ctx = /** @type {import('./scripts/macros/engine/MacroEnvBuilder.js').MacroEnvRawContext} */ ({
-        content,
-        name1Override: options.name1Override,
-        name2Override: options.name2Override,
-        original: options.original,
-        groupOverride: options.groupOverride,
-        replaceCharacterCard: options.replaceCharacterCard ?? true,
-        dynamicMacros: options.dynamicMacros ?? {},
-        postProcessFn: options.postProcessFn ?? ((x) => x),
-    });
-
-    const env = MacroEnvBuilder.buildFromRawEnv(ctx);
-    const result = MacroEngine.evaluate(content, env);
-    return result;
-}
+export function substituteParams(...args) { return getTavernStageCore().substituteParams.apply(this, args); }
 
 
 /**
@@ -2963,48 +2936,7 @@ export function substituteParams(content, options = {}) {
  * @param {string} [api] Optional API name to get API-specific stopping sequences for
  * @returns {string[]} Array of stopping strings
  */
-export function getStoppingStrings(isImpersonate, isContinue, api = main_api) {
-    // Only custom stop strings apply to Chat Completion
-    if (api === 'openai') {
-        return getCustomStoppingStrings();
-    }
-
-    const result = [];
-
-    if (power_user.context.names_as_stop_strings) {
-        const charString = `\n${name2}:`;
-        const userString = `\n${name1}:`;
-        result.push(isImpersonate ? charString : userString);
-
-        result.push(userString);
-
-        if (isContinue && Array.isArray(chat) && chat[chat.length - 1]?.is_user) {
-            result.push(charString);
-        }
-
-        // Add group members as stopping strings if generating for a specific group member or user. (Allow slash commands to work around name stopping string restrictions)
-        if (selected_group && (name2 || isImpersonate)) {
-            const group = groups.find(x => x.id === selected_group);
-
-            if (group && Array.isArray(group.members)) {
-                const names = group.members
-                    .map(x => characters.find(y => y.avatar == x))
-                    .filter(x => x && x.name && x.name !== name2)
-                    .map(x => `\n${x.name}:`);
-                result.push(...names);
-            }
-        }
-    }
-
-    result.push(...getInstructStoppingSequences());
-    result.push(...getCustomStoppingStrings());
-
-    if (power_user.single_line) {
-        result.unshift('\n');
-    }
-
-    return result.filter(x => x).filter(onlyUnique);
-}
+export function getStoppingStrings(...args) { return getTavernStageCore().getStoppingStrings.apply(this, args); }
 
 /**
  * Background generation based on the provided prompt.
@@ -3078,30 +3010,7 @@ export async function processCommands(message) {
  * @param {string} message Message text
  * @returns {string} Message bias extracted from the message (or an empty string if not found)
  */
-export function extractMessageBias(message) {
-    if (!message) {
-        return '';
-    }
-
-    try {
-        const biasHandlebars = Handlebars.create();
-        const biasMatches = [];
-        biasHandlebars.registerHelper('bias', function (text) {
-            biasMatches.push(text);
-            return '';
-        });
-        const template = biasHandlebars.compile(message);
-        template({});
-
-        if (biasMatches && biasMatches.length > 0) {
-            return ` ${biasMatches.join(' ')}`;
-        }
-
-        return '';
-    } catch {
-        return '';
-    }
-}
+export function extractMessageBias(...args) { return getTavernStageCore().extractMessageBias.apply(this, args); }
 
 /**
  * Removes impersonated group member lines from the group member messages.
@@ -3141,93 +3050,26 @@ function cleanGroupMessage(getMessage) {
     return getMessage;
 }
 
-function addPersonaDescriptionExtensionPrompt() {
-    const INJECT_TAG = 'PERSONA_DESCRIPTION';
-    setExtensionPrompt(INJECT_TAG, '', extension_prompt_types.IN_PROMPT, 0);
-
-    if (!power_user.persona_description || power_user.persona_description_position === persona_description_positions.NONE) {
-        return;
-    }
-
-    const promptPositions = [persona_description_positions.BOTTOM_AN, persona_description_positions.TOP_AN];
-
-    if (promptPositions.includes(power_user.persona_description_position) && shouldWIAddPrompt) {
-        const originalAN = extension_prompts[NOTE_MODULE_NAME].value;
-        const ANWithDesc = power_user.persona_description_position === persona_description_positions.TOP_AN
-            ? `${power_user.persona_description}\n${originalAN}`
-            : `${originalAN}\n${power_user.persona_description}`;
-
-        setExtensionPrompt(NOTE_MODULE_NAME, ANWithDesc, chat_metadata[metadata_keys.position], chat_metadata[metadata_keys.depth], extension_settings.note.allowWIScan, chat_metadata[metadata_keys.role]);
-    }
-
-    if (power_user.persona_description_position === persona_description_positions.AT_DEPTH) {
-        setExtensionPrompt(INJECT_TAG, power_user.persona_description, extension_prompt_types.IN_CHAT, power_user.persona_description_depth, true, power_user.persona_description_role);
-    }
-}
+function addPersonaDescriptionExtensionPrompt(...args) { return getTavernStageCore().addPersonaDescriptionExtensionPrompt.apply(this, args); }
 
 /**
  * Returns all extension prompts combined.
  * @returns {Promise<string>} Combined extension prompts
  */
-async function getAllExtensionPrompts() {
-    const values = [];
-
-    for (const prompt of Object.values(extension_prompts)) {
-        const value = prompt?.value?.trim();
-
-        if (!value) {
-            continue;
-        }
-
-        const hasFilter = typeof prompt.filter === 'function';
-        if (hasFilter && !await prompt.filter()) {
-            continue;
-        }
-
-        values.push(value);
-    }
-
-    return substituteParams(values.join('\n'));
-}
+async function getAllExtensionPrompts(...args) { return getTavernStageCore().getAllExtensionPrompts.apply(this, args); }
 
 /**
  * Wrapper to fetch extension prompts by module name
  * @param {string} moduleName Module name
  * @returns {Promise<string>} Extension prompt
  */
-export async function getExtensionPromptByName(moduleName) {
-    if (!moduleName) {
-        return '';
-    }
-
-    const prompt = extension_prompts[moduleName];
-
-    if (!prompt) {
-        return '';
-    }
-
-    const hasFilter = typeof prompt.filter === 'function';
-
-    if (hasFilter && !await prompt.filter()) {
-        return '';
-    }
-
-    return substituteParams(prompt.value);
-}
+export async function getExtensionPromptByName(...args) { return getTavernStageCore().getExtensionPromptByName.apply(this, args); }
 
 /**
  * Gets the maximum depth of extension prompts.
  * @returns {number} Maximum depth of extension prompts
  */
-export function getExtensionPromptMaxDepth() {
-    return MAX_INJECTION_DEPTH;
-    /*
-    const prompts = Object.values(extension_prompts);
-    const maxDepth = Math.max(...prompts.map(x => x.depth ?? 0));
-    // Clamp to 1 <= depth <= MAX_INJECTION_DEPTH
-    return Math.max(Math.min(maxDepth, MAX_INJECTION_DEPTH), 1);
-    */
-}
+export function getExtensionPromptMaxDepth(...args) { return getTavernStageCore().getExtensionPromptMaxDepth.apply(this, args); }
 
 /**
  * Returns the extension prompt for the given position, depth, and role.
@@ -3239,35 +3081,7 @@ export function getExtensionPromptMaxDepth() {
  * @param {boolean} [wrap] Wrap start and end with a separator
  * @returns {Promise<string>} Extension prompt
  */
-export async function getExtensionPrompt(position = extension_prompt_types.IN_PROMPT, depth = undefined, separator = '\n', role = undefined, wrap = true) {
-    const filterByFunction = async (prompt) => {
-        const hasFilter = typeof prompt.filter === 'function';
-        if (hasFilter && !await prompt.filter()) {
-            return false;
-        }
-        return true;
-    };
-    const promptPromises = Object.keys(extension_prompts)
-        .sort()
-        .map((x) => extension_prompts[x])
-        .filter(x => x.position == position && x.value)
-        .filter(x => depth === undefined || x.depth === undefined || x.depth === depth)
-        .filter(x => role === undefined || x.role === undefined || x.role === role)
-        .filter(filterByFunction);
-    const prompts = await Promise.all(promptPromises);
-
-    let values = prompts.map(x => x.value.trim()).join(separator);
-    if (wrap && values.length && !values.startsWith(separator)) {
-        values = separator + values;
-    }
-    if (wrap && values.length && !values.endsWith(separator)) {
-        values = values + separator;
-    }
-    if (values.length) {
-        values = substituteParams(values);
-    }
-    return values;
-}
+export async function getExtensionPrompt(...args) { return getTavernStageCore().getExtensionPrompt.apply(this, args); }
 
 /**
  * Base chat replacement function for character card fields.
@@ -3279,18 +3093,7 @@ export async function getExtensionPrompt(position = extension_prompt_types.IN_PR
  * @param {string?} name2Override Override for name2
  * @returns {string} Processed string
  */
-export function baseChatReplace(value, name1Override = null, name2Override = null) {
-    if (typeof value === 'string' && value.length > 0) {
-        value = substituteParams(value, { name1Override, name2Override, replaceCharacterCard: false });
-
-        if (power_user.collapse_newlines) {
-            value = collapseNewlines(value);
-        }
-
-        value = value.replace(/\r/g, '');
-    }
-    return value;
-}
+export function baseChatReplace(...args) { return getTavernStageCore().baseChatReplace.apply(this, args); }
 
 /**
  * @typedef {Object} CharacterCardFields
@@ -3313,25 +3116,7 @@ export function baseChatReplace(value, name1Override = null, name2Override = nul
  * @param {Record<string, () => string|string[]>} resolvers Map of field names to resolver functions
  * @returns {CharacterCardFields} Object with lazy getters
  */
-export function createLazyFields(resolvers) {
-    const result = /** @type {CharacterCardFields} */ ({});
-    for (const [key, resolver] of Object.entries(resolvers)) {
-        let cached;
-        let resolved = false;
-        Object.defineProperty(result, key, {
-            get() {
-                if (!resolved) {
-                    cached = resolver();
-                    resolved = true;
-                }
-                return cached;
-            },
-            enumerable: true,
-            configurable: true,
-        });
-    }
-    return result;
-}
+export function createLazyFields(...args) { return getTavernStageCore().createLazyFields.apply(this, args); }
 
 /**
  * Returns the character card fields for the current character as lazy getters.
@@ -3340,73 +3125,7 @@ export function createLazyFields(resolvers) {
  * @param {number} [options.chid] Optional character index
  * @returns {CharacterCardFields} Character card fields with lazy evaluation
  */
-export function getCharacterCardFieldsLazy({ chid = undefined } = {}) {
-    const currentChid = chid ?? this_chid;
-    const character = characters[currentChid];
-
-    // For group chats, we need to check if group cards should be used
-    const useGroupCards = selected_group && character;
-    const groupCardsLazy = useGroupCards ? getGroupCharacterCardsLazy(selected_group, Number(currentChid)) : null;
-
-    /** @type {Record<string, () => string|string[]>} */
-    const resolvers = {
-        persona: () => baseChatReplace(power_user.persona_description?.trim()),
-        system: () => {
-            if (!character) return '';
-            const systemPrompt = chat_metadata.system_prompt || character.data?.system_prompt || '';
-            return power_user.prefer_character_prompt ? baseChatReplace(systemPrompt.trim()) : '';
-        },
-        jailbreak: () => {
-            if (!character) return '';
-            return power_user.prefer_character_jailbreak ? baseChatReplace(character.data?.post_history_instructions?.trim()) : '';
-        },
-        version: () => character?.data?.character_version ?? '',
-        charDepthPrompt: () => {
-            if (!character) return '';
-            return baseChatReplace(character.data?.extensions?.depth_prompt?.prompt?.trim());
-        },
-        creatorNotes: () => {
-            if (!character) return '';
-            return baseChatReplace(character.data?.creator_notes?.trim());
-        },
-        // These four fields may be overridden by group cards
-        description: () => {
-            if (groupCardsLazy) return groupCardsLazy.description;
-            if (!character) return '';
-            return baseChatReplace(character.description?.trim());
-        },
-        personality: () => {
-            if (groupCardsLazy) return groupCardsLazy.personality;
-            if (!character) return '';
-            return baseChatReplace(character.personality?.trim());
-        },
-        scenario: () => {
-            if (groupCardsLazy) return groupCardsLazy.scenario;
-            if (!character) return '';
-            const scenarioText = chat_metadata.scenario || character.scenario || '';
-            return baseChatReplace(scenarioText.trim());
-        },
-        mesExamples: () => {
-            if (groupCardsLazy) return groupCardsLazy.mesExamples;
-            if (!character) return '';
-            const exampleDialog = chat_metadata.mes_example || character.mes_example || '';
-            return baseChatReplace(exampleDialog.trim());
-        },
-        firstMessage: () => {
-            if (!character) return '';
-            const firstMes = character.first_mes?.trim() || '';
-            return baseChatReplace(firstMes);
-        },
-        alternateGreetings: () => {
-            if (!character) return [];
-            const altGreetings = character.data?.alternate_greetings;
-            if (!Array.isArray(altGreetings)) return [];
-            return altGreetings.map(greeting => baseChatReplace(greeting?.trim()));
-        },
-    };
-
-    return createLazyFields(resolvers);
-}
+export function getCharacterCardFieldsLazy(...args) { return getTavernStageCore().getCharacterCardFieldsLazy.apply(this, args); }
 
 /**
  * Returns the character card fields for the current character.
@@ -3414,46 +3133,14 @@ export function getCharacterCardFieldsLazy({ chid = undefined } = {}) {
  * @param {number} [options.chid] Optional character index
  * @returns {CharacterCardFields} Character card fields
  */
-export function getCharacterCardFields({ chid = undefined } = {}) {
-    const lazy = getCharacterCardFieldsLazy({ chid });
-
-    // Resolve all lazy fields into a plain object
-    return {
-        system: lazy.system,
-        mesExamples: lazy.mesExamples,
-        description: lazy.description,
-        personality: lazy.personality,
-        persona: lazy.persona,
-        scenario: lazy.scenario,
-        jailbreak: lazy.jailbreak,
-        version: lazy.version,
-        charDepthPrompt: lazy.charDepthPrompt,
-        creatorNotes: lazy.creatorNotes,
-        firstMessage: lazy.firstMessage,
-        alternateGreetings: lazy.alternateGreetings,
-    };
-}
+export function getCharacterCardFields(...args) { return getTavernStageCore().getCharacterCardFields.apply(this, args); }
 
 /**
  * Parses an examples string.
  * @param {string} examplesStr
  * @returns {string[]} Examples array with block heading
  */
-export function parseMesExamples(examplesStr, isInstruct) {
-    if (!examplesStr || examplesStr.length === 0 || examplesStr === '<START>') {
-        return [];
-    }
-
-    if (!examplesStr.startsWith('<START>')) {
-        examplesStr = '<START>\n' + examplesStr.trim();
-    }
-
-    const exampleSeparator = power_user.context.example_separator ? `${substituteParams(power_user.context.example_separator)}\n` : '';
-    const blockHeading = (main_api === 'openai' || isInstruct) ? '<START>\n' : exampleSeparator;
-    const splitExamples = examplesStr.split(/<START>/gi).slice(1).map(block => `${blockHeading}${block.trim()}\n`);
-
-    return splitExamples;
-}
+export function parseMesExamples(...args) { return getTavernStageCore().parseMesExamples.apply(this, args); }
 
 export function isStreamingEnabled() {
     return (
@@ -4228,1318 +3915,7 @@ function removeLastMessage() {
  * @param {boolean} dryRun Whether to actually generate a message or just assemble the prompt
  * @returns {Promise<any>} Returns a promise that resolves when the text is done generating.
  */
-export async function Generate(type, { automatic_trigger, force_name2, quiet_prompt, quietToLoud, skipWIAN, force_chid, signal, quietImage, quietName, jsonSchema = null, depth = 0 } = {}, dryRun = false) {
-    console.log('Generate entered');
-    setGenerationProgress(0);
-    generation_started = new Date();
-
-    // Prevent generation from shallow characters
-    await unshallowCharacter(this_chid);
-
-    // Occurs every time, even if the generation is aborted due to slash commands execution
-    await eventSource.emit(event_types.GENERATION_STARTED, type, { automatic_trigger, force_name2, quiet_prompt, quietToLoud, skipWIAN, force_chid, signal, quietImage }, dryRun);
-
-    // Don't recreate abort controller if signal is passed
-    if (!(abortController && signal)) {
-        abortController = new AbortController();
-    }
-
-    // OpenAI doesn't need instruct mode. Use OAI main prompt instead.
-    const isInstruct = power_user.instruct.enabled && main_api !== 'openai';
-    const isImpersonate = type == 'impersonate';
-
-    if (!(dryRun || depth || type == 'regenerate' || type == 'swipe' || type == 'quiet')) {
-        const interruptedByCommand = await processCommands(String($('#send_textarea').val()));
-
-        if (interruptedByCommand) {
-            //$("#send_textarea").val('')[0].dispatchEvent(new Event('input', { bubbles:true }));
-            unblockGeneration(type);
-            return Promise.resolve();
-        }
-    }
-
-    // Occurs only if the generation is not aborted due to slash commands execution
-    await eventSource.emit(event_types.GENERATION_AFTER_COMMANDS, type, { automatic_trigger, force_name2, quiet_prompt, quietToLoud, skipWIAN, force_chid, signal, quietImage }, dryRun);
-
-    if (main_api == 'kobold' && kai_settings.streaming_kobold && !kai_flags.can_use_streaming) {
-        toastr.error(t`Streaming is enabled, but the version of Kobold used does not support token streaming.`, undefined, { timeOut: 10000, preventDuplicates: true });
-        unblockGeneration(type);
-        return Promise.resolve();
-    }
-
-    if (isHordeGenerationNotAllowed()) {
-        unblockGeneration(type);
-        return Promise.resolve();
-    }
-
-    if (!dryRun) {
-        // Ping server to make sure it is still alive
-        const pingResult = await pingServer();
-
-        if (!pingResult) {
-            unblockGeneration(type);
-            toastr.error(t`Verify that the server is running and accessible.`, t`ST Server cannot be reached`);
-            throw new Error('Server unreachable');
-        }
-
-        // Hide swipes if not in a dry run.
-        hideSwipeButtons();
-        // If generated any message, set the flag to indicate it can't be recreated again.
-        chat_metadata.tainted = true;
-    }
-
-    if (selected_group && !is_group_generating) {
-        if (!dryRun) {
-            // Returns the promise that generateGroupWrapper returns; resolves when generation is done
-            return generateGroupWrapper(false, type, { quiet_prompt, force_chid, signal: abortController.signal, quietImage, jsonSchema });
-        }
-
-        const characterIndexMap = new Map(characters.map((char, index) => [char.avatar, index]));
-        const group = groups.find((x) => x.id === selected_group);
-
-        const enabledMembers = group.members.reduce((acc, member) => {
-            if (!group.disabled_members.includes(member) && !acc.includes(member)) {
-                acc.push(member);
-            }
-            return acc;
-        }, []);
-
-        const memberIds = enabledMembers
-            .map((member) => characterIndexMap.get(member))
-            .filter((index) => index !== undefined && index !== null);
-
-        if (memberIds.length > 0) {
-            if (menu_type != 'character_edit') setCharacterId(memberIds[0]);
-            setCharacterName('');
-        } else {
-            console.log('No enabled members found');
-            unblockGeneration(type);
-            return Promise.resolve();
-        }
-    }
-
-    //#########QUIET PROMPT STUFF##############
-    //this function just gives special care to novel quiet instruction prompts
-    if (quiet_prompt) {
-        quiet_prompt = substituteParams(quiet_prompt);
-        quiet_prompt = main_api == 'novel' && !quietToLoud ? adjustNovelInstructionPrompt(quiet_prompt) : quiet_prompt;
-    }
-
-    const hasBackendConnection = online_status !== 'no_connection';
-
-    // We can't do anything because we're not in a chat right now. (Unless it's a dry run, in which case we need to
-    // assemble the prompt so we can count its tokens regardless of whether a chat is active.)
-    if (!dryRun && !hasBackendConnection) {
-        is_send_press = false;
-        return Promise.resolve();
-    }
-
-    const lastMessage = chat[chat.length - 1];
-
-    let textareaText;
-    if (type !== 'regenerate' && type !== 'swipe' && type !== 'quiet' && !isImpersonate && !dryRun && !depth) {
-        is_send_press = true;
-        textareaText = String($('#send_textarea').val());
-        $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
-    } else {
-        textareaText = '';
-        if (chat.length && lastMessage.is_user) {
-            //do nothing? why does this check exist?
-        } else if (type !== 'quiet' && type !== 'swipe' && !isImpersonate && !dryRun && !depth && chat.length) {
-            deleteItemizedPromptForMessage(chat.length - 1);
-            chat.length = chat.length - 1;
-            await removeLastMessage();
-            await eventSource.emit(event_types.MESSAGE_DELETED, chat.length);
-        }
-    }
-
-    const isContinue = type == 'continue';
-
-    // Rewrite the generation timer to account for the time passed for all the continuations.
-    if (isContinue && chat.length) {
-        const prevFinished = lastMessage.gen_finished;
-        const prevStarted = lastMessage.gen_started;
-
-        if (prevFinished && prevStarted) {
-            const timePassed = Number(prevFinished) - Number(prevStarted);
-            generation_started = new Date(Date.now() - timePassed);
-            lastMessage.gen_started = generation_started;
-        }
-    }
-
-    if (!dryRun) {
-        deactivateSendButtons();
-    }
-
-    let { messageBias, promptBias, isUserPromptBias } = getBiasStrings(textareaText, type);
-
-    //*********************************
-    //PRE FORMATING STRING
-    //*********************************
-
-    // These generation types should not attach pending files to the chat
-    const noAttachTypes = [
-        'regenerate',
-        'swipe',
-        'impersonate',
-        'quiet',
-        'continue',
-    ];
-    //for normal messages sent from user..
-    if ((textareaText != '' || (hasPendingFileAttachment() && !noAttachTypes.includes(type))) && !automatic_trigger && type !== 'quiet' && !dryRun && !depth) {
-        // If user message contains no text other than bias - send as a system message
-        if (messageBias && !removeMacros(textareaText)) {
-            sendSystemMessage(system_message_types.GENERIC, ' ', { bias: messageBias });
-        } else {
-            await sendMessageAsUser(textareaText, messageBias);
-        }
-    } else if (textareaText == '' && !automatic_trigger && !dryRun && [undefined, 'normal'].includes(type) && main_api == 'openai' && oai_settings.send_if_empty.trim().length > 0 && !depth) {
-        // Use send_if_empty if set and the user message is empty. Only when sending messages normally
-        await sendMessageAsUser(oai_settings.send_if_empty.trim(), messageBias);
-    }
-
-    let {
-        description,
-        personality,
-        persona,
-        scenario,
-        mesExamples,
-        system,
-        jailbreak,
-        charDepthPrompt,
-        creatorNotes,
-    } = getCharacterCardFields();
-
-    // Depth prompt (character-specific A/N)
-    removeDepthPrompts();
-    const groupDepthPrompts = getGroupDepthPrompts(selected_group, Number(this_chid));
-
-    if (selected_group && Array.isArray(groupDepthPrompts) && groupDepthPrompts.length > 0) {
-        groupDepthPrompts.forEach((value, index) => {
-            const role = getExtensionPromptRoleByName(value.role);
-            setExtensionPrompt(inject_ids.DEPTH_PROMPT_INDEX(index), value.text, extension_prompt_types.IN_CHAT, value.depth, extension_settings.note.allowWIScan, role);
-        });
-    } else {
-        const depthPromptText = charDepthPrompt || '';
-        const depthPromptDepth = characters[this_chid]?.data?.extensions?.depth_prompt?.depth ?? depth_prompt_depth_default;
-        const depthPromptRole = getExtensionPromptRoleByName(characters[this_chid]?.data?.extensions?.depth_prompt?.role ?? depth_prompt_role_default);
-        setExtensionPrompt(inject_ids.DEPTH_PROMPT, depthPromptText, extension_prompt_types.IN_CHAT, depthPromptDepth, extension_settings.note.allowWIScan, depthPromptRole);
-    }
-
-    // First message in fresh 1-on-1 chat reacts to user/character settings changes
-    if (chat.length) {
-        chat[0].mes = substituteParams(chat[0].mes);
-    }
-
-    // Collect messages with usable content
-    const canUseTools = ToolManager.isToolCallingSupported();
-    const canPerformToolCalls = !dryRun && ToolManager.canPerformToolCalls(type) && depth < ToolManager.RECURSE_LIMIT;
-    let coreChat = chat.filter(x => !x.is_system || (canUseTools && Array.isArray(x.extra?.tool_invocations)));
-    if (type === 'swipe') {
-        coreChat.pop();
-    }
-
-    coreChat = await Promise.all(coreChat.map(async (/** @type {ChatMessage} */ chatItem, index) => {
-        let message = chatItem.mes;
-        let regexType = chatItem.is_user ? regex_placement.USER_INPUT : regex_placement.AI_OUTPUT;
-        let options = { isPrompt: true, depth: (coreChat.length - index - (isContinue ? 2 : 1)) };
-
-        let regexedMessage = getRegexedString(message, regexType, options);
-        regexedMessage = await appendFileContent(chatItem, regexedMessage);
-
-        const titles = [];
-        if (chatItem?.extra?.append_title && chatItem?.extra?.title) {
-            titles.push(chatItem.extra.title);
-        }
-        if (Array.isArray(chatItem?.extra?.media)) {
-            for (const mediaItem of chatItem.extra.media) {
-                if (mediaItem?.title && mediaItem?.append_title) {
-                    titles.push(mediaItem.title);
-                }
-            }
-        }
-        if (titles.length > 0) {
-            regexedMessage = `${regexedMessage}\n\n${titles.join('\n\n')}`;
-        }
-
-        return {
-            ...chatItem,
-            mes: regexedMessage,
-            index,
-        };
-    }));
-
-    const promptReasoning = new PromptReasoning();
-    for (let i = coreChat.length - 1; i >= 0; i--) {
-        const depth = coreChat.length - i - (isContinue ? 2 : 1);
-        const isPrefix = isContinue && i === coreChat.length - 1;
-
-        // In group chats, only include reasoning from the currently generating character
-        const isOtherGroupMember = selected_group && coreChat[i].name !== name2;
-
-        coreChat[i] = {
-            ...coreChat[i],
-            mes: isOtherGroupMember
-                ? coreChat[i].mes
-                : promptReasoning.addToMessage(
-                    coreChat[i].mes,
-                    getRegexedString(
-                        String(coreChat[i].extra?.reasoning ?? ''),
-                        regex_placement.REASONING,
-                        { isPrompt: true, depth: depth },
-                    ),
-                    isPrefix,
-                    coreChat[i].extra?.reasoning_duration,
-                ),
-        };
-        if (promptReasoning.isLimitReached()) {
-            break;
-        }
-    }
-
-    // Determine token limit
-    let this_max_context = getMaxPromptTokens();
-
-    if (!dryRun) {
-        console.debug('Running extension interceptors');
-        const aborted = await runGenerationInterceptors(coreChat, this_max_context, type);
-
-        if (aborted) {
-            console.debug('Generation aborted by extension interceptors');
-            unblockGeneration(type);
-            return Promise.resolve();
-        }
-    } else {
-        console.debug('Skipping extension interceptors for dry run');
-    }
-
-    // Adjust token limit for Horde
-    let adjustedParams;
-    if (main_api == 'koboldhorde' && (horde_settings.auto_adjust_context_length || horde_settings.auto_adjust_response_length)) {
-        try {
-            adjustedParams = await adjustHordeGenerationParams(max_context, amount_gen);
-        } catch {
-            unblockGeneration(type);
-            return Promise.resolve();
-        }
-        if (horde_settings.auto_adjust_context_length) {
-            this_max_context = (adjustedParams.maxContextLength - adjustedParams.maxLength);
-        }
-    }
-
-    // Fetches the combined prompt for both negative and positive prompts
-    const cfgGuidanceScale = getGuidanceScale();
-    const useCfgPrompt = cfgGuidanceScale && cfgGuidanceScale.value !== 1;
-
-    // Adjust max context based on CFG prompt to prevent overfitting
-    if (useCfgPrompt) {
-        const negativePrompt = getCfgPrompt(cfgGuidanceScale, true, true)?.value || '';
-        const positivePrompt = getCfgPrompt(cfgGuidanceScale, false, true)?.value || '';
-        if (negativePrompt || positivePrompt) {
-            const previousMaxContext = this_max_context;
-            const [negativePromptTokenCount, positivePromptTokenCount] = await Promise.all([getTokenCountAsync(negativePrompt), getTokenCountAsync(positivePrompt)]);
-            const decrement = Math.max(negativePromptTokenCount, positivePromptTokenCount);
-            this_max_context -= decrement;
-            console.log(`Max context reduced by ${decrement} tokens of CFG prompt (${previousMaxContext} -> ${this_max_context})`);
-        }
-    }
-
-    console.log(`Core/all messages: ${coreChat.length}/${chat.length}`);
-
-    if ((promptBias && !isUserPromptBias) || power_user.always_force_name2 || main_api == 'novel') {
-        force_name2 = true;
-    }
-
-    if (isImpersonate) {
-        force_name2 = false;
-    }
-
-    let mesExamplesArray = parseMesExamples(mesExamples, isInstruct);
-
-    // Set non-WI AN
-    setFloatingPrompt();
-
-    // Add WI to prompt (and also inject WI to AN value via hijack)
-    // Make quiet prompt available for WIAN
-    setExtensionPrompt(inject_ids.QUIET_PROMPT, quiet_prompt || '', extension_prompt_types.IN_PROMPT, 0, true);
-    const chatForWI = coreChat.map(x => world_info_include_names ? `${x.name}: ${x.mes}` : x.mes).reverse();
-    /** @type {import('./scripts/world-info.js').WIGlobalScanData} */
-    const globalScanData = {
-        personaDescription: persona,
-        characterDescription: description,
-        characterPersonality: personality,
-        characterDepthPrompt: charDepthPrompt,
-        scenario: scenario,
-        creatorNotes: creatorNotes,
-        trigger: GENERATION_TYPE_TRIGGERS.includes(type) ? type : 'normal',
-    };
-    const { worldInfoString, worldInfoBefore, worldInfoAfter, worldInfoExamples, worldInfoDepth, outletEntries } = await getWorldInfoPrompt(chatForWI, this_max_context, dryRun, globalScanData);
-    setExtensionPrompt(inject_ids.QUIET_PROMPT, '', extension_prompt_types.IN_PROMPT, 0, true);
-
-    // Add message example WI
-    for (const example of worldInfoExamples) {
-        const exampleMessage = example.content;
-
-        if (exampleMessage.length === 0) {
-            continue;
-        }
-
-        const formattedExample = baseChatReplace(exampleMessage);
-        const cleanedExample = parseMesExamples(formattedExample, isInstruct);
-
-        // Insert depending on before or after position
-        if (example.position === wi_anchor_position.before) {
-            mesExamplesArray.unshift(...cleanedExample);
-        } else {
-            mesExamplesArray.push(...cleanedExample);
-        }
-    }
-
-    // At this point, the raw message examples can be created
-    const mesExamplesRawArray = [...mesExamplesArray];
-
-    if (mesExamplesArray && isInstruct) {
-        mesExamplesArray = formatInstructModeExamples(mesExamplesArray, name1, name2);
-    }
-
-    if (skipWIAN !== true) {
-        console.log('skipWIAN not active, adding WIAN');
-        // Add all depth WI entries to prompt
-        flushWIInjections();
-        if (Array.isArray(worldInfoDepth)) {
-            worldInfoDepth.forEach((e) => {
-                const joinedEntries = e.entries.join('\n');
-                setExtensionPrompt(inject_ids.CUSTOM_WI_DEPTH_ROLE(e.depth, e.role), joinedEntries, extension_prompt_types.IN_CHAT, e.depth, false, e.role);
-            });
-        }
-        if (outletEntries && typeof outletEntries === 'object' && Object.keys(outletEntries).length > 0) {
-            Object.entries(outletEntries).forEach(([key, value]) => {
-                setExtensionPrompt(inject_ids.CUSTOM_WI_OUTLET(key), value.join('\n'), extension_prompt_types.NONE, 0);
-            });
-        }
-    } else {
-        console.log('skipping WIAN');
-    }
-
-    // Add persona description to prompt
-    addPersonaDescriptionExtensionPrompt();
-
-    // Prepare the system prompt for Text Completion APIs
-    if (main_api !== 'openai') {
-        if (power_user.sysprompt.enabled) {
-            system = power_user.prefer_character_prompt && system
-                ? substituteParams(system, { original: power_user.sysprompt.content ?? '' })
-                : baseChatReplace(power_user.sysprompt.content);
-            system = isInstruct ? substituteParams(system, { original: power_user.sysprompt.content ?? '' }) : system;
-        } else {
-            // Nullify if it's not enabled
-            system = '';
-        }
-    }
-
-    // Collect before / after story string injections
-    const beforeScenarioAnchor = await getExtensionPrompt(extension_prompt_types.BEFORE_PROMPT);
-    const afterScenarioAnchor = await getExtensionPrompt(extension_prompt_types.IN_PROMPT);
-
-    const storyStringParams = {
-        description: description,
-        personality: personality,
-        persona: power_user.persona_description_position == persona_description_positions.IN_PROMPT ? persona : '',
-        scenario: scenario,
-        system: system,
-        char: name2,
-        user: name1,
-        wiBefore: worldInfoBefore,
-        wiAfter: worldInfoAfter,
-        loreBefore: worldInfoBefore,
-        loreAfter: worldInfoAfter,
-        anchorBefore: beforeScenarioAnchor.trim(),
-        anchorAfter: afterScenarioAnchor.trim(),
-        mesExamples: mesExamplesArray.join(''),
-        mesExamplesRaw: mesExamplesRawArray.join(''),
-    };
-
-    // Render the story string and combine with injections
-    const storyString = renderStoryString(storyStringParams);
-    let combinedStoryString = isInstruct ? formatInstructModeStoryString(storyString) : storyString;
-
-    // Inject the story string as in-chat prompt (if needed)
-    const applyStoryStringInject = main_api !== 'openai' && power_user.context.story_string_position === extension_prompt_types.IN_CHAT;
-    if (applyStoryStringInject) {
-        const depth = power_user.context.story_string_depth ?? 1;
-        const role = power_user.context.story_string_role ?? extension_prompt_roles.SYSTEM;
-        setExtensionPrompt(inject_ids.STORY_STRING, combinedStoryString, extension_prompt_types.IN_CHAT, depth, false, role);
-        // Remove to prevent duplication
-        combinedStoryString = '';
-    } else {
-        setExtensionPrompt(inject_ids.STORY_STRING, '', extension_prompt_types.IN_CHAT, 0);
-    }
-
-    // Story string rendered, safe to remove
-    if (power_user.strip_examples) {
-        mesExamplesArray = [];
-    }
-
-    // Inject all Depth prompts. Chat Completion does it separately
-    let injectedIndices = [];
-    if (main_api !== 'openai') {
-        injectedIndices = await doChatInject(coreChat, isContinue);
-    }
-
-    if (main_api !== 'openai' && power_user.sysprompt.enabled) {
-        jailbreak = power_user.prefer_character_jailbreak && jailbreak
-            ? substituteParams(jailbreak, { original: power_user.sysprompt.post_history ?? '' })
-            : baseChatReplace(power_user.sysprompt.post_history);
-
-        // Only inject the jb if there is one
-        if (jailbreak) {
-            // When continuing generation of previous output, last user message precedes the message to continue
-            if (isContinue) {
-                coreChat.splice(coreChat.length - 1, 0, { mes: jailbreak, is_user: true });
-            } else {
-                // This operation will result in the injectedIndices indexes being off by one
-                coreChat.push({ mes: jailbreak, is_user: true });
-                // Add +1 to the elements to correct for the new PHI/Jailbreak message.
-                injectedIndices.forEach(shiftUpByOne);
-            }
-        }
-    }
-
-    let chat2 = [];
-    let continue_mag = '';
-    let userMessageIndices = [];
-    const lastUserMessageIndex = coreChat.findLastIndex(x => x.is_user);
-
-    for (let i = coreChat.length - 1, j = 0; i >= 0; i--, j++) {
-        if (main_api == 'openai') {
-            chat2[i] = coreChat[j].mes;
-            if (i === 0 && isContinue) {
-                chat2[i] = chat2[i].slice(0, chat2[i].lastIndexOf(coreChat[j].mes) + coreChat[j].mes.length);
-                continue_mag = coreChat[j].mes;
-            }
-            continue;
-        }
-
-        chat2[i] = formatMessageHistoryItem(coreChat[j], isInstruct, false);
-
-        if (j === 0 && isInstruct) {
-            // Reformat with the first output sequence (if any)
-            chat2[i] = formatMessageHistoryItem(coreChat[j], isInstruct, force_output_sequence.FIRST);
-        }
-
-        if (lastUserMessageIndex >= 0 && j === lastUserMessageIndex && isInstruct && !isImpersonate) {
-            // Reformat with the last input sequence (if any)
-            chat2[i] = formatMessageHistoryItem(coreChat[j], isInstruct, force_output_sequence.LAST);
-        }
-
-        // Do not suffix the message for continuation
-        if (i === 0 && isContinue) {
-            // Pick something that's very unlikely to be in a message
-            const FORMAT_TOKEN = '\u0000\ufffc\u0000\ufffd';
-
-            if (isInstruct) {
-                const originalMessage = String(coreChat[j].mes ?? '');
-                coreChat[j].mes = originalMessage.replaceAll(FORMAT_TOKEN, '') + FORMAT_TOKEN;
-                // Reformat with the last output sequence (if any)
-                chat2[i] = formatMessageHistoryItem(coreChat[j], isInstruct, force_output_sequence.LAST);
-                coreChat[j].mes = originalMessage;
-            }
-
-            chat2[i] = chat2[i].includes(FORMAT_TOKEN)
-                ? chat2[i].slice(0, chat2[i].lastIndexOf(FORMAT_TOKEN))
-                : chat2[i].slice(0, chat2[i].lastIndexOf(coreChat[j].mes) + coreChat[j].mes.length);
-            continue_mag = coreChat[j].mes;
-        }
-
-        if (coreChat[j].is_user) {
-            userMessageIndices.push(i);
-        }
-    }
-
-    let addUserAlignment = isInstruct && power_user.instruct.user_alignment_message;
-    let userAlignmentMessage = '';
-
-    if (addUserAlignment) {
-        const alignmentMessage = {
-            name: name1,
-            mes: substituteParams(power_user.instruct.user_alignment_message),
-            is_user: true,
-        };
-        userAlignmentMessage = formatMessageHistoryItem(alignmentMessage, isInstruct, force_output_sequence.FIRST);
-    }
-
-    let oaiMessages = [];
-    let oaiMessageExamples = [];
-
-    if (main_api === 'openai') {
-        oaiMessages = setOpenAIMessages(coreChat);
-        oaiMessageExamples = setOpenAIMessageExamples(mesExamplesArray);
-    }
-
-    // hack for regeneration of the first message
-    if (chat2.length == 0) {
-        chat2.push('');
-    }
-
-    let examplesString = '';
-    let chatString = addChatsPreamble(addChatsSeparator(''));
-    let cyclePrompt = '';
-
-    async function getMessagesTokenCount() {
-        const encodeString = [
-            combinedStoryString,
-            examplesString,
-            userAlignmentMessage,
-            chatString,
-            modifyLastPromptLine(''),
-            cyclePrompt,
-        ].join('').replace(/\r/gm, '');
-        return getTokenCountAsync(encodeString, power_user.token_padding);
-    }
-
-    // Force pinned examples into the context
-    let pinExmString;
-    if (power_user.pin_examples) {
-        pinExmString = examplesString = mesExamplesArray.join('');
-    }
-
-    // Only add the chat in context if past the greeting message
-    if (isContinue && (chat2.length > 1 || main_api === 'openai')) {
-        cyclePrompt = chat2.shift();
-        // Adjust indices to account for the shift
-        injectedIndices = injectedIndices.map(shiftDownByOne).filter(x => x >= 0);
-        userMessageIndices = userMessageIndices.map(shiftDownByOne).filter(x => x >= 0);
-    }
-
-    // Collect enough messages to fill the context
-    let arrMes = new Array(chat2.length);
-    let tokenCount = await getMessagesTokenCount();
-    let lastAddedIndex = 0;
-
-    // Pre-allocate all injections first.
-    // If it doesn't fit - user shot himself in the foot
-    for (const index of injectedIndices) {
-        // not needed for OAI prompting
-        if (main_api == 'openai') {
-            break;
-        }
-
-        const item = chat2[index];
-
-        if (typeof item !== 'string') {
-            continue;
-        }
-
-        tokenCount += await getTokenCountAsync(item.replace(/\r/gm, ''));
-        if (tokenCount < this_max_context) {
-            chatString = chatString + item;
-            arrMes[index] = item;
-            lastAddedIndex = Math.max(lastAddedIndex, index);
-        } else {
-            break;
-        }
-    }
-
-    for (let i = 0; i < chat2.length; i++) {
-        // not needed for OAI prompting
-        if (main_api == 'openai') {
-            break;
-        }
-
-        // Skip already injected messages
-        if (arrMes[i] !== undefined) {
-            continue;
-        }
-
-        const item = chat2[i];
-
-        if (typeof item !== 'string') {
-            continue;
-        }
-
-        tokenCount += await getTokenCountAsync(item.replace(/\r/gm, ''));
-        if (tokenCount < this_max_context) {
-            chatString = chatString + item;
-            arrMes[i] = item;
-            lastAddedIndex = Math.max(lastAddedIndex, i);
-        } else {
-            break;
-        }
-    }
-
-    // Add user alignment message if last message is not a user message
-    const stoppedAtUser = userMessageIndices.includes(lastAddedIndex);
-    if (addUserAlignment && !stoppedAtUser) {
-        tokenCount += await getTokenCountAsync(userAlignmentMessage.replace(/\r/gm, ''));
-        chatString = userAlignmentMessage + chatString;
-        arrMes.push(userAlignmentMessage);
-        injectedIndices.push(arrMes.length - 1);
-    }
-
-    // Unsparse the array. Adjust injected indices
-    const newArrMes = [];
-    const newInjectedIndices = [];
-    for (let i = 0; i < arrMes.length; i++) {
-        if (arrMes[i] !== undefined) {
-            newArrMes.push(arrMes[i]);
-            if (injectedIndices.includes(i)) {
-                newInjectedIndices.push(newArrMes.length - 1);
-            }
-        }
-    }
-
-    arrMes = newArrMes;
-    injectedIndices = newInjectedIndices;
-
-    if (main_api !== 'openai') {
-        setInContextMessages(arrMes.length - injectedIndices.length, type);
-    }
-
-    // Estimate how many unpinned example messages fit in the context
-    tokenCount = await getMessagesTokenCount();
-    let count_exm_add = 0;
-    if (!power_user.pin_examples) {
-        for (let example of mesExamplesArray) {
-            tokenCount += await getTokenCountAsync(example.replace(/\r/gm, ''));
-            examplesString += example;
-            if (tokenCount < this_max_context) {
-                count_exm_add++;
-            } else {
-                break;
-            }
-        }
-    }
-
-    let mesSend = [];
-    console.debug('calling runGenerate');
-
-    if (isContinue) {
-        // Coping mechanism for OAI spacing
-        if (main_api === 'openai' && !cyclePrompt.endsWith(' ')) {
-            cyclePrompt += oai_settings.continue_postfix;
-            continue_mag += oai_settings.continue_postfix;
-        }
-    }
-
-    const originalType = type;
-
-    if (!dryRun) {
-        is_send_press = true;
-    }
-
-    let generatedPromptCache = cyclePrompt || '';
-    if (generatedPromptCache.length == 0 || type === 'continue') {
-        console.debug('generating prompt');
-        chatString = '';
-        arrMes = arrMes.reverse();
-        arrMes.forEach(function (item, i, arr) {
-            // OAI doesn't need all of this
-            if (main_api === 'openai') {
-                return;
-            }
-
-            // Cohee: This removes a newline from the end of the last message in the context
-            // Last prompt line will add a newline if it's not a continuation
-            // In instruct mode it only removes it if wrap is enabled and it's not a quiet generation
-            if (i === arrMes.length - 1 && type !== 'continue') {
-                if (!isInstruct || (power_user.instruct.wrap && type !== 'quiet')) {
-                    item = item.replace(/\n?$/, '');
-                }
-            }
-
-            mesSend[mesSend.length] = { message: item, extensionPrompts: [] };
-        });
-    }
-
-    let mesExmString = '';
-
-    function setPromptString() {
-        if (main_api == 'openai') {
-            return;
-        }
-
-        console.debug('--setting Prompt string');
-        mesExmString = pinExmString ?? mesExamplesArray.slice(0, count_exm_add).join('');
-
-        if (mesSend.length) {
-            mesSend[mesSend.length - 1].message = modifyLastPromptLine(mesSend[mesSend.length - 1].message);
-        }
-    }
-
-    function modifyLastPromptLine(lastMesString) {
-        //#########QUIET PROMPT STUFF PT2##############
-
-        // Add quiet generation prompt at depth 0
-        if (quiet_prompt && quiet_prompt.length) {
-            // here name1 is forced for all quiet prompts..why?
-            const name = name1;
-            //checks if we are in instruct, if so, formats the chat as such, otherwise just adds the quiet prompt
-            const quietAppend = isInstruct ? formatInstructModeChat(name, quiet_prompt, false, true, '', name1, name2, false) : `\n${quiet_prompt}`;
-
-            //This begins to fix quietPrompts (particularly /sysgen) for instruct
-            //previously instruct input sequence was being appended to the last chat message w/o '\n'
-            //and no output sequence was added after the input's content.
-            //TODO: respect output_sequence vs last_output_sequence settings
-            //TODO: decide how to prompt this to clarify who is talking 'Narrator', 'System', etc.
-            if (isInstruct) {
-                lastMesString += quietAppend; // + power_user.instruct.output_sequence + '\n';
-            } else {
-                lastMesString += quietAppend;
-            }
-
-
-            // Ross: bailing out early prevents quiet prompts from respecting other instruct prompt toggles
-            // for sysgen, SD, and summary this is desireable as it prevents the AI from responding as char..
-            // but for idle prompting, we want the flexibility of the other prompt toggles, and to respect them as per settings in the extension
-            // need a detection for what the quiet prompt is being asked for...
-
-            // Bail out early?
-            if (!isInstruct && !quietToLoud) {
-                return lastMesString;
-            }
-        }
-
-
-        // Get instruct mode line
-        if (isInstruct && !isContinue) {
-            const name = (quiet_prompt && !quietToLoud && !isImpersonate) ? (quietName ?? 'System') : (isImpersonate ? name1 : name2);
-            const isQuiet = quiet_prompt && type == 'quiet';
-            lastMesString += formatInstructModePrompt(name, isImpersonate, promptBias, name1, name2, isQuiet, quietToLoud);
-        }
-
-        // Get non-instruct impersonation line
-        if (!isInstruct && isImpersonate && !isContinue) {
-            const name = name1;
-            if (!lastMesString.endsWith('\n')) {
-                lastMesString += '\n';
-            }
-            lastMesString += name + ':';
-        }
-
-        // Add character's name
-        // Force name append on continue (if not continuing on user message or first message)
-        const isContinuingOnFirstMessage = chat.length === 1 && isContinue;
-        if (!isInstruct && force_name2 && !isContinuingOnFirstMessage) {
-            if (!lastMesString.endsWith('\n')) {
-                lastMesString += '\n';
-            }
-            if (!isContinue || !(chat[chat.length - 1]?.is_user)) {
-                lastMesString += `${name2}:`;
-            }
-        }
-
-        return lastMesString;
-    }
-
-    async function checkPromptSize() {
-        console.debug('---checking Prompt size');
-        setPromptString();
-        const jointMessages = mesSend.map((e) => `${e.extensionPrompts.join('')}${e.message}`).join('');
-        const prompt = [
-            combinedStoryString,
-            mesExmString,
-            addChatsPreamble(addChatsSeparator(jointMessages)),
-            '\n',
-            modifyLastPromptLine(''),
-            generatedPromptCache,
-        ].join('').replace(/\r/gm, '');
-        let thisPromptContextSize = await getTokenCountAsync(prompt, power_user.token_padding);
-
-        if (thisPromptContextSize > this_max_context) {        //if the prepared prompt is larger than the max context size...
-            if (count_exm_add > 0) {                            // ..and we have example messages..
-                count_exm_add--;                            // remove the example messages...
-                await checkPromptSize();                            // and try agin...
-            } else if (mesSend.length > 0) {                    // if the chat history is longer than 0
-                mesSend.shift();                            // remove the first (oldest) chat entry..
-                await checkPromptSize();                            // and check size again..
-            } else {
-                //end
-                console.debug(`---mesSend.length = ${mesSend.length}`);
-            }
-        }
-    }
-
-    if (generatedPromptCache.length > 0 && main_api !== 'openai') {
-        console.debug('---Generated Prompt Cache length: ' + generatedPromptCache.length);
-        await checkPromptSize();
-    } else {
-        console.debug('---calling setPromptString ' + generatedPromptCache.length);
-        setPromptString();
-    }
-
-    // For prompt bit itemization
-    let mesSendString = '';
-
-    async function getCombinedPrompt(isNegative) {
-        // Only return if the guidance scale doesn't exist or the value is 1
-        // Also don't return if constructing the neutral prompt
-        if (isNegative && !useCfgPrompt) {
-            return;
-        }
-
-        // OAI has its own prompt manager. No need to do anything here
-        if (main_api === 'openai') {
-            return '';
-        }
-
-        // Deep clone
-        let finalMesSend = structuredClone(mesSend);
-
-        if (useCfgPrompt) {
-            const cfgPrompt = getCfgPrompt(cfgGuidanceScale, isNegative);
-            if (cfgPrompt.value) {
-                if (cfgPrompt.depth === 0) {
-                    finalMesSend[finalMesSend.length - 1].message +=
-                        /\s/.test(finalMesSend[finalMesSend.length - 1].message.slice(-1))
-                            ? cfgPrompt.value
-                            : ` ${cfgPrompt.value}`;
-                } else {
-                    // TODO: Make all extension prompts use an array/splice method
-                    const lengthDiff = mesSend.length - cfgPrompt.depth;
-                    const cfgDepth = lengthDiff >= 0 ? lengthDiff : 0;
-                    const cfgMessage = finalMesSend[cfgDepth];
-                    if (cfgMessage) {
-                        if (!Array.isArray(finalMesSend[cfgDepth].extensionPrompts)) {
-                            finalMesSend[cfgDepth].extensionPrompts = [];
-                        }
-                        finalMesSend[cfgDepth].extensionPrompts.push(`${cfgPrompt.value}\n`);
-                    }
-                }
-            }
-        }
-
-        // Add prompt bias after everything else
-        // Always run with continue
-        if (!isInstruct && !isImpersonate) {
-            if (promptBias.trim().length !== 0) {
-                finalMesSend[finalMesSend.length - 1].message +=
-                    /\s/.test(finalMesSend[finalMesSend.length - 1].message.slice(-1))
-                        ? promptBias.trimStart()
-                        : ` ${promptBias.trimStart()}`;
-            }
-        }
-
-        // Flattens the multiple prompt objects to a string.
-        const combine = () => {
-            // Right now, everything is suffixed with a newline
-            mesSendString = finalMesSend.map((e) => `${e.extensionPrompts.join('')}${e.message}`).join('');
-
-            // add a custom dingus (if defined)
-            mesSendString = addChatsSeparator(mesSendString);
-
-            // add chat preamble
-            mesSendString = addChatsPreamble(mesSendString);
-
-            let combinedPrompt = [
-                combinedStoryString,
-                mesExmString,
-                mesSendString,
-                generatedPromptCache,
-            ].join('').replace(/\r/gm, '');
-
-            if (power_user.collapse_newlines) {
-                combinedPrompt = collapseNewlines(combinedPrompt);
-            }
-
-            return combinedPrompt;
-        };
-
-        finalMesSend.forEach((item, i) => {
-            item.injected = injectedIndices.includes(finalMesSend.length - i - 1);
-        });
-
-        let data = {
-            api: main_api,
-            combinedPrompt: null,
-            description,
-            personality,
-            persona,
-            scenario,
-            char: name2,
-            user: name1,
-            worldInfoBefore,
-            worldInfoAfter,
-            beforeScenarioAnchor,
-            afterScenarioAnchor,
-            storyString,
-            mesExmString,
-            mesSendString,
-            finalMesSend,
-            generatedPromptCache,
-            main: system,
-            jailbreak,
-            naiPreamble: nai_settings.preamble,
-        };
-
-        // Before returning the combined prompt, give available context related information to all subscribers.
-        await eventSource.emit(event_types.GENERATE_BEFORE_COMBINE_PROMPTS, data);
-
-        // If one or multiple subscribers return a value, forfeit the responsibillity of flattening the context.
-        return !data.combinedPrompt ? combine() : data.combinedPrompt;
-    }
-
-    let finalPrompt = await getCombinedPrompt(false);
-
-    const eventData = { prompt: finalPrompt, dryRun: dryRun };
-    await eventSource.emit(event_types.GENERATE_AFTER_COMBINE_PROMPTS, eventData);
-    finalPrompt = eventData.prompt;
-
-    let maxLength = Number(amount_gen); // how many tokens the AI will be requested to generate
-    let thisPromptBits = [];
-
-    let generate_data;
-    switch (main_api) {
-        case 'koboldhorde':
-        case 'kobold':
-            if (main_api == 'koboldhorde' && horde_settings.auto_adjust_response_length) {
-                maxLength = Math.min(maxLength, adjustedParams.maxLength);
-                maxLength = Math.max(maxLength, MIN_LENGTH); // prevent validation errors
-            }
-
-            generate_data = {
-                prompt: finalPrompt,
-                gui_settings: true,
-                max_length: maxLength,
-                max_context_length: max_context,
-                api_server: kai_settings.api_server,
-            };
-
-            if (kai_settings.preset_settings != 'gui') {
-                const isHorde = main_api == 'koboldhorde';
-                const presetSettings = koboldai_settings[koboldai_setting_names[kai_settings.preset_settings]];
-                const maxContext = (adjustedParams && horde_settings.auto_adjust_context_length) ? adjustedParams.maxContextLength : max_context;
-                generate_data = getKoboldGenerationData(finalPrompt, presetSettings, maxLength, maxContext, isHorde, type);
-            }
-            break;
-        case 'textgenerationwebui': {
-            const cfgValues = useCfgPrompt ? { guidanceScale: cfgGuidanceScale, negativePrompt: await getCombinedPrompt(true) } : null;
-            generate_data = await getTextGenGenerationData(finalPrompt, maxLength, isImpersonate, isContinue, cfgValues, type);
-            break;
-        }
-        case 'novel': {
-            const cfgValues = useCfgPrompt ? { guidanceScale: cfgGuidanceScale } : null;
-            const presetSettings = novelai_settings[novelai_setting_names[nai_settings.preset_settings_novel]];
-            generate_data = getNovelGenerationData(finalPrompt, presetSettings, maxLength, isImpersonate, isContinue, cfgValues, type);
-            break;
-        }
-        case 'openai': {
-            let [prompt, counts] = await prepareOpenAIMessages({
-                name2: name2,
-                charDescription: description,
-                charPersonality: personality,
-                scenario: scenario,
-                worldInfoBefore: worldInfoBefore,
-                worldInfoAfter: worldInfoAfter,
-                extensionPrompts: extension_prompts,
-                bias: promptBias,
-                type: type,
-                quietPrompt: quiet_prompt,
-                quietImage: quietImage,
-                cyclePrompt: cyclePrompt,
-                systemPromptOverride: system,
-                jailbreakPromptOverride: jailbreak,
-                messages: oaiMessages,
-                messageExamples: oaiMessageExamples,
-            }, dryRun);
-            generate_data = { prompt: prompt };
-
-            // TODO: move these side-effects somewhere else, so this switch-case solely sets generate_data
-            // counts will return false if the user has not enabled the token breakdown feature
-            if (counts) {
-                parseTokenCounts(counts, thisPromptBits);
-            }
-
-            if (!dryRun) {
-                setInContextMessages(openai_messages_count, type);
-            }
-            break;
-        }
-    }
-
-    await eventSource.emit(event_types.GENERATE_AFTER_DATA, generate_data, dryRun);
-
-    if (dryRun) {
-        return Promise.resolve();
-    }
-
-    /**
-     * Saves itemized prompt bits and calls streaming or non-streaming generation API.
-     * @returns {Promise<void|*|Awaited<*>|String|{fromStream}|string|undefined|Object>}
-     * @throws {Error|object} Error with message text, or Error with response JSON (OAI/Horde), or the actual response JSON (novel|textgenerationwebui|kobold)
-     */
-    async function finishGenerating() {
-        if (power_user.console_log_prompts) {
-            console.log(generate_data.prompt);
-        }
-
-        console.debug('rungenerate calling API');
-
-        showStopButton();
-
-        //set array object for prompt token itemization of this message
-        let currentArrayEntry = Number(thisPromptBits.length - 1);
-        let additionalPromptStuff = {
-            ...thisPromptBits[currentArrayEntry],
-            rawPrompt: generate_data.prompt || generate_data.input,
-            mesId: getNextMessageId(type),
-            allAnchors: await getAllExtensionPrompts(),
-            chatInjects: injectedIndices?.map(index => arrMes[arrMes.length - index - 1])?.join('') || '',
-            summarizeString: (extension_prompts['1_memory']?.value || ''),
-            authorsNoteString: (extension_prompts['2_floating_prompt']?.value || ''),
-            smartContextString: (extension_prompts.chromadb?.value || ''),
-            chatVectorsString: (extension_prompts['3_vectors']?.value || ''),
-            dataBankVectorsString: (extension_prompts['4_vectors_data_bank']?.value || ''),
-            worldInfoString: worldInfoString,
-            storyString: storyString,
-            beforeScenarioAnchor: beforeScenarioAnchor,
-            afterScenarioAnchor: afterScenarioAnchor,
-            examplesString: examplesString,
-            mesSendString: mesSendString,
-            generatedPromptCache: generatedPromptCache,
-            promptBias: promptBias,
-            finalPrompt: finalPrompt,
-            charDescription: description,
-            charPersonality: personality,
-            scenarioText: scenario,
-            this_max_context: this_max_context,
-            padding: power_user.token_padding,
-            main_api: main_api,
-            instruction: main_api !== 'openai' && power_user.sysprompt.enabled ? substituteParams(power_user.prefer_character_prompt && system ? system : power_user.sysprompt.content) : '',
-            userPersona: (power_user.persona_description_position == persona_description_positions.IN_PROMPT ? (persona || '') : ''),
-            tokenizer: getFriendlyTokenizerName(main_api).tokenizerName || '',
-            presetName: getPresetManager()?.getSelectedPresetName() || '',
-            messagesCount: main_api !== 'openai' ? mesSend.length : oaiMessages.length,
-            examplesCount: main_api !== 'openai' ? (pinExmString ? mesExamplesArray.length : count_exm_add) : oaiMessageExamples.length,
-        };
-
-        //console.log(additionalPromptStuff);
-        const itemizedIndex = itemizedPrompts.findIndex((item) => item.mesId === additionalPromptStuff.mesId);
-
-        if (itemizedIndex !== -1) {
-            itemizedPrompts[itemizedIndex] = additionalPromptStuff;
-        } else {
-            itemizedPrompts.push(additionalPromptStuff);
-        }
-
-        console.debug(`pushed prompt bits to itemizedPrompts array. Length is now: ${itemizedPrompts.length}`);
-
-        if (isStreamingEnabled() && type !== 'quiet') {
-            continue_mag = promptReasoning.removePrefix(continue_mag);
-            streamingProcessor = new StreamingProcessor(type, force_name2, generation_started, continue_mag, promptReasoning);
-            if (isContinue) {
-                // Save reply does add cycle text to the prompt, so it's not needed here
-                streamingProcessor.firstMessageText = '';
-            }
-
-            streamingProcessor.generator = await sendStreamingRequest(type, generate_data, { jsonSchema });
-
-            hideSwipeButtons();
-            let getMessage = await streamingProcessor.generate();
-            let messageChunk = cleanUpMessage({
-                getMessage: getMessage,
-                isImpersonate: isImpersonate,
-                isContinue: isContinue,
-                displayIncompleteSentences: false,
-            });
-
-            if (isContinue) {
-                getMessage = continue_mag + getMessage;
-            }
-
-            const isStreamFinished = streamingProcessor && !streamingProcessor.isStopped && streamingProcessor.isFinished;
-            const isStreamWithToolCalls = streamingProcessor && Array.isArray(streamingProcessor.toolCalls) && streamingProcessor.toolCalls.length;
-            if (canPerformToolCalls && isStreamFinished && isStreamWithToolCalls) {
-                const lastMessage = chat[chat.length - 1];
-                const hasToolCalls = ToolManager.hasToolCalls(streamingProcessor.toolCalls);
-                const shouldDeleteMessage = type !== 'swipe' && ['', '...'].includes(lastMessage?.mes) && !lastMessage?.extra?.reasoning && ['', '...'].includes(streamingProcessor?.result);
-                hasToolCalls && shouldDeleteMessage && await deleteLastMessage();
-                if (hasToolCalls && !shouldDeleteMessage) {
-                    await streamingProcessor.finalizeIntermediaryMessage(streamingProcessor.messageId, getMessage, { unlockUI: false });
-                }
-                const invocationResult = await ToolManager.invokeFunctionTools(streamingProcessor.toolCalls, {
-                    reasoningText: streamingProcessor.reasoningHandler.reasoning,
-                });
-                const shouldStopGeneration = (!invocationResult.invocations.length && shouldDeleteMessage) || invocationResult.stealthCalls.length;
-                if (hasToolCalls) {
-                    if (shouldStopGeneration) {
-                        if (Array.isArray(invocationResult.errors) && invocationResult.errors.length) {
-                            ToolManager.showToolCallError(invocationResult.errors);
-                        }
-                        unblockGeneration(type);
-                        streamingProcessor = null;
-                        return;
-                    }
-
-                    streamingProcessor = null;
-                    depth = depth + 1;
-                    await ToolManager.saveFunctionToolInvocations(invocationResult.invocations);
-                    return Generate('normal', { automatic_trigger, force_name2, quiet_prompt, quietToLoud, skipWIAN, force_chid, signal, quietImage, quietName, depth }, dryRun);
-                }
-            }
-
-            if (isStreamFinished) {
-                await streamingProcessor.onFinishStreaming(streamingProcessor.messageId, getMessage);
-                streamingProcessor = null;
-                triggerAutoContinue(messageChunk, isImpersonate);
-                return Object.defineProperties(new String(getMessage), {
-                    'messageChunk': { value: messageChunk },
-                    'fromStream': { value: true },
-                });
-            }
-        } else {
-            return await sendGenerationRequest(type, generate_data, { jsonSchema });
-        }
-    }
-
-    return finishGenerating().then(onSuccess, onError);
-
-    /**
-     * Handles the successful response from the generation API.
-     * @param data
-     * @returns {Promise<String|{fromStream}|*|string|string|void|Awaited<*>|undefined>}
-     * @throws {Error} Throws an error if the response data contains an error message
-     */
-    async function onSuccess(data) {
-        if (!data) return;
-
-        if (data?.fromStream) {
-            return data;
-        }
-
-        let messageChunk = '';
-
-        // if an error was returned in data (textgenwebui), show it and throw it
-        if (data.error) {
-            unblockGeneration(type);
-
-            if (data?.response) {
-                toastr.error(data.response, t`API Error`, { preventDuplicates: true });
-            }
-            throw new Error(data?.response);
-        }
-
-        if (jsonSchema) {
-            unblockGeneration(type);
-            return extractJsonFromData(data, { returnInvalidJson: jsonSchema.returnInvalid ?? false });
-        }
-
-        //const getData = await response.json();
-        let getMessage = extractMessageFromData(data);
-        let title = extractTitleFromData(data);
-        let reasoning = extractReasoningFromData(data);
-        let imageUrls = extractImagesFromData(data);
-        const reasoningSignature = extractReasoningSignatureFromData(data);
-        kobold_horde_model = title;
-
-        const swipes = extractMultiSwipes(data, type);
-
-        messageChunk = cleanUpMessage({
-            getMessage: getMessage,
-            isImpersonate: isImpersonate,
-            isContinue: isContinue,
-            displayIncompleteSentences: false,
-        });
-
-
-        reasoning = getRegexedString(reasoning, regex_placement.REASONING);
-
-        if (power_user.trim_spaces) {
-            reasoning = reasoning.trim();
-        }
-
-        if (isContinue) {
-            continue_mag = promptReasoning.removePrefix(continue_mag);
-            getMessage = continue_mag + getMessage;
-        }
-
-        //Formating
-        const displayIncomplete = type === 'quiet' && !quietToLoud;
-        getMessage = cleanUpMessage({
-            getMessage: getMessage,
-            isImpersonate: isImpersonate,
-            isContinue: isContinue,
-            displayIncompleteSentences: displayIncomplete,
-        });
-
-        if (isImpersonate) {
-            $('#send_textarea').val(getMessage)[0].dispatchEvent(new Event('input', { bubbles: true }));
-            await eventSource.emit(event_types.IMPERSONATE_READY, getMessage);
-        } else if (type == 'quiet') {
-            unblockGeneration(type);
-            return getMessage;
-        } else {
-            // Without streaming we'll be having a full message on continuation. Treat it as a last chunk.
-            if (originalType !== 'continue') {
-                ({ type, getMessage } = await saveReply({ type, getMessage, title, swipes, reasoning, imageUrls, reasoningSignature }));
-            } else {
-                ({ type, getMessage } = await saveReply({ type: 'appendFinal', getMessage, title, swipes, reasoning, imageUrls, reasoningSignature }));
-            }
-
-            // This relies on `saveReply` having been called to add the message to the chat, so it must be last.
-            parseAndSaveLogprobs(data, continue_mag);
-        }
-
-        if (canPerformToolCalls) {
-            const hasToolCalls = ToolManager.hasToolCalls(data);
-            const shouldDeleteMessage = type !== 'swipe' && ['', '...'].includes(getMessage) && !reasoning;
-            hasToolCalls && shouldDeleteMessage && await deleteLastMessage();
-            const invocationResult = await ToolManager.invokeFunctionTools(data, { reasoningText: reasoning });
-            const shouldStopGeneration = (!invocationResult.invocations.length && shouldDeleteMessage) || invocationResult.stealthCalls.length;
-            if (hasToolCalls) {
-                if (shouldStopGeneration) {
-                    if (Array.isArray(invocationResult.errors) && invocationResult.errors.length) {
-                        ToolManager.showToolCallError(invocationResult.errors);
-                    }
-                    unblockGeneration(type);
-                    return;
-                }
-
-                depth = depth + 1;
-                await ToolManager.saveFunctionToolInvocations(invocationResult.invocations);
-                return Generate('normal', { automatic_trigger, force_name2, quiet_prompt, quietToLoud, skipWIAN, force_chid, signal, quietImage, quietName, depth }, dryRun);
-            }
-        }
-
-        if (type !== 'quiet') {
-            playMessageSound();
-        }
-
-        const isAborted = abortController && abortController.signal.aborted;
-        if (!isAborted && power_user.auto_swipe && generatedTextFiltered(getMessage)) {
-            is_send_press = false;
-            return await swipe(null, SWIPE_DIRECTION.RIGHT, { source: SWIPE_SOURCE.AUTO_SWIPE, repeated: true, forceMesId: chat.length - 1 });
-        }
-
-        console.debug('/api/chats/save called by /Generate');
-        await saveChatConditional();
-        unblockGeneration(type);
-        streamingProcessor = null;
-
-        if (type !== 'quiet') {
-            triggerAutoContinue(messageChunk, isImpersonate);
-        }
-
-        // Don't break the API chain that expects a single string in return
-        return Object.defineProperty(new String(getMessage), 'messageChunk', { value: messageChunk });
-    }
-
-    /**
-     * Exception handler for finishGenerating
-     * @param {Error|object} exception Error or response JSON
-     * @throws {Error|object} Re-throws the exception
-     */
-    function onError(exception) {
-        // if the response JSON was thrown (novel|textgenerationwebui|kobold), show the error message
-        if (typeof exception?.error?.message === 'string') {
-            toastr.error(exception.error.message, t`Text generation error`, { timeOut: 10000, extendedTimeOut: 20000 });
-        }
-
-        unblockGeneration(type);
-        console.log(exception);
-        streamingProcessor = null;
-        throw exception;
-    }
-}
+export async function Generate(...args) { return getTavernStageCore().Generate.apply(this, args); }
 //MARK: Generate() ends
 
 /**
@@ -5566,66 +3942,9 @@ export function stopGeneration() {
  * @param {boolean} isContinue Whether the generation is a continuation. If true, the extension prompts of depth 0 are injected at position 1.
  * @returns {Promise<number[]>} Array of indices where the extension prompts were injected
  */
-async function doChatInject(messages, isContinue) {
-    const injectedMessages = [];
-    let totalInsertedMessages = 0;
-    messages.reverse();
+async function doChatInject(...args) { return getTavernStageCore().doChatInject.apply(this, args); }
 
-    const maxDepth = getExtensionPromptMaxDepth();
-    for (let i = 0; i <= maxDepth; i++) {
-        // Order of priority (most important go lower)
-        const roles = [extension_prompt_roles.SYSTEM, extension_prompt_roles.USER, extension_prompt_roles.ASSISTANT];
-        const names = {
-            [extension_prompt_roles.SYSTEM]: '',
-            [extension_prompt_roles.USER]: name1,
-            [extension_prompt_roles.ASSISTANT]: name2,
-        };
-        const roleMessages = [];
-        const separator = '\n';
-        const wrap = false;
-
-        for (const role of roles) {
-            const extensionPrompt = String(await getExtensionPrompt(extension_prompt_types.IN_CHAT, i, separator, role, wrap)).trimStart();
-            const isNarrator = role === extension_prompt_roles.SYSTEM;
-            const isUser = role === extension_prompt_roles.USER;
-            const name = names[role];
-
-            if (extensionPrompt) {
-                roleMessages.push({
-                    name: name,
-                    is_user: isUser,
-                    mes: extensionPrompt,
-                    extra: {
-                        type: isNarrator ? system_message_types.NARRATOR : null,
-                    },
-                });
-            }
-        }
-
-        if (roleMessages.length) {
-            const depth = isContinue && i === 0 ? 1 : i;
-            const injectIdx = Math.min(depth + totalInsertedMessages, messages.length);
-            messages.splice(injectIdx, 0, ...roleMessages);
-            totalInsertedMessages += roleMessages.length;
-            injectedMessages.push(...roleMessages);
-        }
-    }
-
-    const injectedIndices = injectedMessages.map(msg => messages.indexOf(msg));
-    messages.reverse();
-    return injectedIndices;
-}
-
-function flushWIInjections() {
-    const depthPrefix = inject_ids.CUSTOM_WI_DEPTH;
-    const outletPrefix = inject_ids.CUSTOM_WI_OUTLET('');
-
-    for (const key of Object.keys(extension_prompts)) {
-        if (key.startsWith(depthPrefix) || key.startsWith(outletPrefix)) {
-            delete extension_prompts[key];
-        }
-    }
-}
+function flushWIInjections(...args) { return getTavernStageCore().flushWIInjections.apply(this, args); }
 
 /**
  * Unblocks the UI after a generation is complete.
@@ -5644,9 +3963,7 @@ function unblockGeneration(type) {
     flushWIInjections();
 }
 
-export function getNextMessageId(type) {
-    return type == 'swipe' ? chat.length - 1 : chat.length;
-}
+export function getNextMessageId(...args) { return getTavernStageCore().getNextMessageId.apply(this, args); }
 
 /**
  * Determines if the message should be auto-continued.
@@ -5732,39 +4049,7 @@ export function triggerAutoContinue(messageChunk, isImpersonate) {
     }
 }
 
-export function getBiasStrings(textareaText, type) {
-    if (type == 'impersonate' || type == 'continue') {
-        return { messageBias: '', promptBias: '', isUserPromptBias: false };
-    }
-
-    let promptBias = '';
-    let messageBias = extractMessageBias(textareaText);
-
-    // If user input is not provided, retrieve the bias of the most recent relevant message
-    if (!textareaText) {
-        for (let i = chat.length - 1; i >= 0; i--) {
-            const mes = chat[i];
-            if (type === 'swipe' && chat.length - 1 === i) {
-                continue;
-            }
-            if (mes && (mes.is_user || mes.is_system || mes.extra?.type === system_message_types.NARRATOR)) {
-                if (mes.extra?.bias?.trim()?.length > 0) {
-                    promptBias = mes.extra.bias;
-                }
-                break;
-            }
-        }
-    }
-
-    promptBias = messageBias || promptBias || power_user.user_prompt_bias || '';
-    const isUserPromptBias = promptBias === power_user.user_prompt_bias;
-
-    // Substitute params for everything
-    messageBias = substituteParams(messageBias);
-    promptBias = substituteParams(promptBias);
-
-    return { messageBias, promptBias, isUserPromptBias };
-}
+export function getBiasStrings(...args) { return getTavernStageCore().getBiasStrings.apply(this, args); }
 
 /**
  * @param {Object} chatItem Message history item.
@@ -5798,9 +4083,7 @@ function formatMessageHistoryItem(chatItem, isInstruct, forceOutputSequence) {
  * @param {string} str String to remove macros from.
  * @returns {string} String with macros removed.
  */
-export function removeMacros(str) {
-    return (str ?? '').replace(/\{\{[\s\S]*?\}\}/gm, '').trim();
-}
+export function removeMacros(...args) { return getTavernStageCore().removeMacros.apply(this, args); }
 
 /**
  * Inserts a user message into the chat history.
@@ -5812,120 +4095,26 @@ export function removeMacros(str) {
  * @param {string} [avatar] Avatar of the user sending the message. Defaults to user_avatar.
  * @returns {Promise<any>} A promise that resolves to the message when it is inserted.
  */
-export async function sendMessageAsUser(messageText, messageBias, insertAt = null, compact = false, name = name1, avatar = user_avatar) {
-    messageText = getRegexedString(messageText, regex_placement.USER_INPUT);
-
-    const message = {
-        name: name,
-        is_user: true,
-        is_system: false,
-        send_date: getMessageTimeStamp(),
-        mes: substituteParams(messageText),
-        extra: {
-            isSmallSys: compact,
-        },
-    };
-
-    if (power_user.message_token_count_enabled) {
-        message.extra.token_count = await getTokenCountAsync(message.mes, 0);
-    }
-
-    // Lock user avatar to a persona.
-    if (avatar in power_user.personas) {
-        message.force_avatar = getThumbnailUrl('persona', avatar);
-    }
-
-    if (messageBias) {
-        message.extra.bias = messageBias;
-        message.mes = removeMacros(message.mes);
-    }
-
-    await populateFileAttachment(message);
-    statMesProcess(message, 'user', characters, this_chid, '');
-
-    chat_metadata.tainted = true;
-
-    if (typeof insertAt === 'number' && insertAt >= 0 && insertAt <= chat.length) {
-        chat.splice(insertAt, 0, message);
-        await saveChatConditional();
-        await eventSource.emit(event_types.MESSAGE_SENT, insertAt);
-        await reloadCurrentChat();
-        await eventSource.emit(event_types.USER_MESSAGE_RENDERED, insertAt);
-    } else {
-        chat.push(message);
-        await saveChatConditional();
-        const chat_id = (chat.length - 1);
-        await eventSource.emit(event_types.MESSAGE_SENT, chat_id);
-        addOneMessage(message);
-        await eventSource.emit(event_types.USER_MESSAGE_RENDERED, chat_id);
-    }
-
-    return message;
-}
+export async function sendMessageAsUser(...args) { return getTavernStageCore().sendMessageAsUser.apply(this, args); }
 
 /**
  * Gets the maximum context token limit (the full context window size before subtracting response length).
  * @returns {number} The maximum context token limit for the current API.
  */
-export function getMaxContextTokens() {
-    if (main_api == 'kobold' || main_api == 'koboldhorde' || main_api == 'textgenerationwebui') {
-        return max_context;
-    }
-    if (main_api == 'novel') {
-        let this_max_context = Number(max_context);
-        if (nai_settings.model_novel.includes('clio')) {
-            this_max_context = Math.min(max_context, 8192);
-        }
-        if (nai_settings.model_novel.includes('kayra')) {
-            this_max_context = Math.min(max_context, 8192);
-
-            const subscriptionLimit = getKayraMaxContextTokens();
-            if (typeof subscriptionLimit === 'number' && this_max_context > subscriptionLimit) {
-                this_max_context = subscriptionLimit;
-                console.log(`NovelAI subscription limit reached. Max context size is now ${this_max_context}`);
-            }
-        }
-        if (nai_settings.model_novel.includes('erato')) {
-            // subscriber limits coming soon
-            this_max_context = Math.min(max_context, 8192);
-
-            // Added special tokens and whatnot
-            this_max_context -= 10;
-        }
-        return this_max_context;
-    }
-    if (main_api == 'openai') {
-        return oai_settings.openai_max_context;
-    }
-    return 1487;
-}
+export function getMaxContextTokens(...args) { return getTavernStageCore().getMaxContextTokens.apply(this, args); }
 
 /**
  * Gets the maximum response token limit (the max generation/reply length).
  * @returns {number} The maximum response token limit for the current API.
  */
-export function getMaxResponseTokens() {
-    if (main_api == 'kobold' || main_api == 'koboldhorde' || main_api == 'textgenerationwebui' || main_api == 'novel') {
-        return amount_gen;
-    }
-    if (main_api == 'openai') {
-        return oai_settings.openai_max_tokens;
-    }
-    return 0;
-}
+export function getMaxResponseTokens(...args) { return getTavernStageCore().getMaxResponseTokens.apply(this, args); }
 
 /**
  * Gets the maximum usable prompt size for the current API.
  * @param {number|null} overrideResponseLength Optional override for the response length.
  * @returns {number} Maximum usable prompt size.
  */
-export function getMaxPromptTokens(overrideResponseLength = null) {
-    if (typeof overrideResponseLength !== 'number' || overrideResponseLength <= 0 || isNaN(overrideResponseLength)) {
-        overrideResponseLength = null;
-    }
-
-    return getMaxContextTokens() - (overrideResponseLength || getMaxResponseTokens());
-}
+export function getMaxPromptTokens(...args) { return getTavernStageCore().getMaxPromptTokens.apply(this, args); }
 
 function parseTokenCounts(counts, thisPromptBits) {
     /**
@@ -5951,19 +4140,9 @@ function parseTokenCounts(counts, thisPromptBits) {
     });
 }
 
-function addChatsPreamble(mesSendString) {
-    return main_api === 'novel'
-        ? substituteParams(nai_settings.preamble) + '\n' + mesSendString
-        : mesSendString;
-}
+function addChatsPreamble(...args) { return getTavernStageCore().addChatsPreamble.apply(this, args); }
 
-function addChatsSeparator(mesSendString) {
-    if (power_user.context.chat_start) {
-        return substituteParams(power_user.context.chat_start + '\n') + mesSendString;
-    } else {
-        return mesSendString;
-    }
-}
+function addChatsSeparator(...args) { return getTavernStageCore().addChatsSeparator.apply(this, args); }
 
 /**
  * Duplicates a character.
@@ -6021,25 +4200,7 @@ export async function duplicateCharacter({ avatar = null, silent = false } = {})
     return data.path;
 }
 
-function setInContextMessages(msgInContextCount, type) {
-    chatElement.find('.mes').removeClass('lastInContext');
-
-    if (type === 'swipe' || type === 'regenerate' || type === 'continue') {
-        msgInContextCount++;
-    }
-
-    const lastMessageBlock = chatElement.find('.mes:not([is_system="true"]), .mes.toolCall').eq(-msgInContextCount);
-    lastMessageBlock.addClass('lastInContext');
-
-    if (lastMessageBlock.length === 0) {
-        const firstMessageId = getFirstDisplayedMessageId();
-        chatElement.find(`.mes[mesid="${firstMessageId}"]`).addClass('lastInContext');
-    }
-
-    // Update last id to chat. No metadata save on purpose, gets hopefully saved via another call
-    const lastMessageId = Math.max(0, chat.length - msgInContextCount);
-    chat_metadata.lastInContextMessageId = lastMessageId;
-}
+function setInContextMessages(...args) { return getTavernStageCore().setInContextMessages.apply(this, args); }
 
 /**
  * @typedef {object} AdditionalRequestOptions
@@ -6125,13 +4286,7 @@ export function getGenerateUrl(api) {
     }
 }
 
-function extractTitleFromData(data) {
-    if (main_api == 'koboldhorde') {
-        return data.workerName;
-    }
-
-    return undefined;
-}
+function extractTitleFromData(...args) { return getTavernStageCore().extractTitleFromData.apply(this, args); }
 
 /**
  * Extracts the image from the response data.
@@ -6141,30 +4296,7 @@ function extractTitleFromData(data) {
  * @param {string} [options.chatCompletionSource] Chat completion source
  * @returns {string[]} Extracted images or empty array
  */
-function extractImagesFromData(data, { mainApi = null, chatCompletionSource = null } = {}) {
-    switch (mainApi ?? main_api) {
-        case 'openai': {
-            switch (chatCompletionSource ?? oai_settings.chat_completion_source) {
-                case chat_completion_sources.VERTEXAI:
-                case chat_completion_sources.MAKERSUITE: {
-                    const inlineData = data?.responseContent?.parts?.filter(x => x.inlineData && !x.thought)?.map(x => x.inlineData);
-                    if (Array.isArray(inlineData) && inlineData.length > 0) {
-                        return inlineData.map(x => `data:${x.mimeType};base64,${x.data}`).filter(isDataURL);
-                    }
-                } break;
-                case chat_completion_sources.OPENROUTER: {
-                    const imageUrl = data?.choices[0]?.message?.images?.filter(x => x.type === 'image_url')?.map(x => x?.image_url?.url);
-                    if (Array.isArray(imageUrl) && imageUrl.length > 0) {
-                        return imageUrl.filter(isDataURL);
-                    }
-                    // TODO: Handle remote URLs
-                }
-            }
-        } break;
-    }
-
-    return [];
-}
+function extractImagesFromData(...args) { return getTavernStageCore().extractImagesFromData.apply(this, args); }
 
 /**
  * parseAndSaveLogprobs receives the full data response for a non-streaming
@@ -6214,31 +4346,7 @@ function parseAndSaveLogprobs(data, continueFrom) {
  * @param {string} activeApi If it's set, ignores active API
  * @returns {string} Extracted message
  */
-export function extractMessageFromData(data, activeApi = null) {
-    function getResult() {
-        if (typeof data === 'string') {
-            return data;
-        }
-
-        switch (activeApi ?? main_api) {
-            case 'kobold':
-                return data.results[0].text;
-            case 'koboldhorde':
-                return data.text;
-            case 'textgenerationwebui':
-                return data.choices?.[0]?.text ?? data.choices?.[0]?.message?.content ?? data.content ?? data.response ?? data[0]?.content ?? '';
-            case 'novel':
-                return data.output;
-            case 'openai':
-                return data?.content?.filter(p => p.type === 'text')?.map(p => p.text)?.join('\n\n') ?? data?.choices?.[0]?.message?.content ?? data?.choices?.[0]?.text ?? data?.text ?? data?.message?.content?.[0]?.text ?? data?.message?.tool_plan ?? '';
-            default:
-                return '';
-        }
-    }
-
-    const result = getResult();
-    return Array.isArray(result) ? result.map(x => x.text).filter(x => x).join('') : result;
-}
+export function extractMessageFromData(...args) { return getTavernStageCore().extractMessageFromData.apply(this, args); }
 
 /**
  * Extracts JSON from the response data.
@@ -6312,59 +4420,7 @@ export function extractJsonFromData(data, { mainApi = null, chatCompletionSource
  * @param {string} type Type of generation
  * @returns {string[]} Array of extra swipes
  */
-function extractMultiSwipes(data, type) {
-    const swipes = [];
-
-    if (!data) {
-        return swipes;
-    }
-
-    if (type === 'continue' || type === 'impersonate' || type === 'quiet') {
-        return swipes;
-    }
-
-    if (main_api === 'textgenerationwebui' && textgen_settings.type === textgen_types.LLAMACPP) {
-        if (!Array.isArray(data)) {
-            return swipes;
-        }
-
-        const multiSwipeCount = data.length - 1;
-        if (multiSwipeCount <= 0) {
-            return swipes;
-        }
-
-        for (let i = 1; i < data.length; i++) {
-            const text = data?.[i]?.content ?? '';
-            swipes.push(text);
-        }
-    }
-
-    if (main_api === 'openai' || (main_api === 'textgenerationwebui' && [textgen_types.MANCER, textgen_types.VLLM, textgen_types.APHRODITE, textgen_types.TABBY, textgen_types.INFERMATICAI].includes(textgen_settings.type))) {
-        if (!Array.isArray(data.choices)) {
-            return swipes;
-        }
-
-        const multiSwipeCount = data.choices.length - 1;
-
-        if (multiSwipeCount <= 0) {
-            return swipes;
-        }
-
-        for (let i = 1; i < data.choices.length; i++) {
-            const text = data?.choices[i]?.message?.content ?? data?.choices[i]?.text ?? '';
-            swipes.push(text);
-        }
-    }
-
-    const cleanedSwipes = swipes.map(text => cleanUpMessage({
-        getMessage: text,
-        isImpersonate: false,
-        isContinue: false,
-        displayIncompleteSentences: false,
-    }));
-
-    return cleanedSwipes;
-}
+function extractMultiSwipes(...args) { return getTavernStageCore().extractMultiSwipes.apply(this, args); }
 
 /**
  * Formats a message according to user settings
@@ -6380,158 +4436,7 @@ function extractMultiSwipes(data, type) {
  *
  * @returns {string} The formatted message
  */
-export function cleanUpMessage({ getMessage, isImpersonate, isContinue, displayIncompleteSentences = false, stoppingStrings = null, includeUserPromptBias = true, trimNames = true, trimWrongNames = true } = {}) {
-    if (arguments.length > 0 && typeof arguments[0] !== 'object') {
-        console.trace('cleanUpMessage called with positional arguments. Please use an object instead.');
-        [getMessage, isImpersonate, isContinue, displayIncompleteSentences, stoppingStrings, includeUserPromptBias, trimNames, trimWrongNames] = arguments;
-    }
-
-    if (!getMessage) {
-        return '';
-    }
-
-    // Add the prompt bias before anything else
-    if (
-        includeUserPromptBias &&
-        power_user.user_prompt_bias &&
-        !isImpersonate &&
-        !isContinue &&
-        power_user.user_prompt_bias.length !== 0
-    ) {
-        getMessage = substituteParams(power_user.user_prompt_bias) + getMessage;
-    }
-
-    // Allow for caching of stopping strings. getStoppingStrings is an expensive function, especially with macros
-    // enabled, so for streaming, we call it once and then pass it into each cleanUpMessage call.
-    if (!stoppingStrings) {
-        stoppingStrings = getStoppingStrings(isImpersonate, isContinue, main_api);
-    }
-
-    for (const stoppingString of stoppingStrings) {
-        if (stoppingString.length) {
-            for (let j = stoppingString.length; j > 0; j--) {
-                if (getMessage.slice(-j) === stoppingString.slice(0, j)) {
-                    getMessage = getMessage.slice(0, -j);
-                    break;
-                }
-            }
-        }
-    }
-
-    // Regex uses vars, so add before formatting
-    getMessage = getRegexedString(getMessage, isImpersonate ? regex_placement.USER_INPUT : regex_placement.AI_OUTPUT);
-
-    if (power_user.collapse_newlines) {
-        getMessage = collapseNewlines(getMessage);
-    }
-
-    // trailing invisible whitespace before every newlines, on a multiline string
-    // "trailing whitespace on newlines       \nevery line of the string    \n?sample text" ->
-    // "trailing whitespace on newlines\nevery line of the string\nsample text"
-    getMessage = getMessage.replace(/[^\S\r\n]+$/gm, '');
-
-    if (trimWrongNames) {
-        // If this is an impersonation, delete the entire response if it starts with "{{char}}:"
-        // If this isn't an impersonation, delete the entire response if it starts with "{{user}}:"
-        // Also delete any trailing text that starts with the wrong name.
-        // This only occurs if the corresponding "power_user.allow_nameX_display" is false.
-
-        let wrongName = isImpersonate
-            ? (!power_user.allow_name2_display ? name2 : '')  // char
-            : (!power_user.allow_name1_display ? name1 : '');  // user
-
-        if (wrongName) {
-            // If the message starts with the wrong name, delete the entire response
-            let startIndex = getMessage.indexOf(`${wrongName}:`);
-            if (startIndex === 0) {
-                getMessage = '';
-                console.debug(`Message started with the wrong name: "${wrongName}" - response was deleted.`);
-            }
-
-            // If there is trailing text starting with the wrong name, trim it off.
-            startIndex = getMessage.indexOf(`\n${wrongName}:`);
-            if (startIndex >= 0) {
-                getMessage = getMessage.substring(0, startIndex);
-            }
-        }
-    }
-
-    if (getMessage.indexOf('<|endoftext|>') != -1) {
-        getMessage = getMessage.substring(0, getMessage.indexOf('<|endoftext|>'));
-    }
-    const isInstruct = power_user.instruct.enabled && main_api !== 'openai';
-    const isNotEmpty = (str) => str && str.trim() !== '';
-    if (isInstruct && power_user.instruct.stop_sequence) {
-        if (getMessage.indexOf(power_user.instruct.stop_sequence) != -1) {
-            getMessage = getMessage.substring(0, getMessage.indexOf(power_user.instruct.stop_sequence));
-        }
-    }
-    // Hana: Only use the first sequence (should be <|model|>)
-    // of the prompt before <|user|> (as KoboldAI Lite does it).
-    if (isInstruct && isNotEmpty(power_user.instruct.input_sequence)) {
-        if (getMessage.indexOf(power_user.instruct.input_sequence) != -1) {
-            getMessage = getMessage.substring(0, getMessage.indexOf(power_user.instruct.input_sequence));
-        }
-    }
-
-    // Remove instruct sequences leaking to the output
-    if (isInstruct && power_user.instruct.sequences_as_stop_strings) {
-        const sequences = [
-            { value: power_user.instruct.input_sequence, apply: isImpersonate && isNotEmpty(power_user.instruct.input_sequence) },
-            { value: power_user.instruct.output_sequence, apply: !isImpersonate && isNotEmpty(power_user.instruct.output_sequence) },
-            { value: power_user.instruct.last_output_sequence, apply: !isImpersonate && isNotEmpty(power_user.instruct.last_output_sequence) },
-        ];
-        for (const seq of sequences.filter(s => s.apply)) {
-            seq.value.split('\n').filter(line => line.trim() !== '').forEach(line => { getMessage = getMessage.replaceAll(line, ''); });
-        }
-    }
-
-    // clean-up group message from excessive generations
-    if (selected_group) {
-        getMessage = cleanGroupMessage(getMessage);
-    }
-
-    if (!power_user.allow_name2_display) {
-        const name2Escaped = escapeRegex(name2);
-        getMessage = getMessage.replace(new RegExp(`(^|\n)${name2Escaped}:\\s*`, 'g'), '$1');
-    }
-
-    if (isImpersonate) {
-        getMessage = getMessage.trim();
-    }
-
-    if (power_user.auto_fix_generated_markdown) {
-        getMessage = fixMarkdown(getMessage, false);
-    }
-
-    if (trimNames) {
-        // If this is an impersonation, trim "{{user}}:" from the beginning
-        // If this isn't an impersonation, trim "{{char}}:" from the beginning.
-        // Only applied when the corresponding "power_user.allow_nameX_display" is false.
-        const nameToTrim2 = isImpersonate
-            ? (!power_user.allow_name1_display ? name1 : '')  // user
-            : (!power_user.allow_name2_display ? name2 : '');  // char
-
-        if (nameToTrim2 && getMessage.startsWith(nameToTrim2 + ':')) {
-            getMessage = getMessage.replace(nameToTrim2 + ':', '');
-            getMessage = getMessage.trimStart();
-        }
-    }
-
-    if (isImpersonate) {
-        getMessage = getMessage.trim();
-    }
-
-    if (!displayIncompleteSentences && power_user.trim_sentences) {
-        getMessage = trimToEndSentence(getMessage);
-    }
-
-    if (power_user.trim_spaces && !PromptReasoning.getLatestPrefix()) {
-        getMessage = getMessage.trim();
-    }
-
-    return getMessage;
-}
+export function cleanUpMessage(...args) { return getTavernStageCore().cleanUpMessage.apply(this, args); }
 
 /**
  * Adds an image to the message.
@@ -6580,195 +4485,7 @@ async function processImageAttachment(message, { imageUrls }) {
  * @property {string} type Type of generation
  * @property {string} getMessage Generated message
  */
-export async function saveReply({ type, getMessage, fromStreaming = false, title = '', swipes = [], reasoning = '', imageUrls = [], reasoningSignature = null }) {
-    // Backward compatibility
-    if (arguments.length > 1 && typeof arguments[0] !== 'object') {
-        console.trace('saveReply called with positional arguments. Please use an object instead.');
-        [type, getMessage, fromStreaming, title, swipes, reasoning, imageUrls, reasoningSignature] = arguments;
-    }
-
-    const lastMessage = chat[chat.length - 1];
-
-    if (type != 'append' && type != 'continue' && type != 'appendFinal' && chat.length && (lastMessage.swipe_id === undefined ||
-        lastMessage.is_user)) {
-        type = 'normal';
-    }
-
-    if (chat.length && (!lastMessage.extra || typeof lastMessage.extra !== 'object')) {
-        lastMessage.extra = {};
-    }
-
-    // Coerce null/undefined to empty string
-    if (chat.length && !lastMessage.extra.reasoning) {
-        lastMessage.extra.reasoning = '';
-    }
-
-    if (!reasoning) {
-        reasoning = '';
-    }
-
-    let oldMessage = '';
-    const generationFinished = new Date();
-    if (type === 'swipe') {
-        oldMessage = lastMessage.mes;
-        lastMessage.swipes.length++;
-        if (lastMessage.swipe_id === lastMessage.swipes.length - 1) {
-            lastMessage.title = title;
-            lastMessage.mes = getMessage;
-            lastMessage.gen_started = generation_started;
-            lastMessage.gen_finished = generationFinished;
-            lastMessage.send_date = getMessageTimeStamp();
-            lastMessage.extra.api = getGeneratingApi();
-            lastMessage.extra.model = getGeneratingModel();
-            lastMessage.extra.reasoning = reasoning;
-            lastMessage.extra.reasoning_duration = null;
-            lastMessage.extra.reasoning_signature = reasoningSignature;
-            await processImageAttachment(lastMessage, { imageUrls });
-            if (power_user.message_token_count_enabled) {
-                const tokenCountText = (reasoning || '') + lastMessage.mes;
-                lastMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
-            }
-            const chat_id = (chat.length - 1);
-            !fromStreaming && await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type);
-            addOneMessage(chat[chat_id], { type: 'swipe' });
-            !fromStreaming && await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
-        } else {
-            lastMessage.mes = getMessage;
-        }
-    } else if (type === 'append' || type === 'continue') {
-        console.debug('Trying to append.');
-        oldMessage = lastMessage.mes;
-        lastMessage.title = title;
-        lastMessage.mes += getMessage;
-        lastMessage.gen_started = generation_started;
-        lastMessage.gen_finished = generationFinished;
-        lastMessage.send_date = getMessageTimeStamp();
-        lastMessage.extra.api = getGeneratingApi();
-        lastMessage.extra.model = getGeneratingModel();
-        lastMessage.extra.reasoning = reasoning;
-        lastMessage.extra.reasoning_duration = null;
-        lastMessage.extra.reasoning_signature = reasoningSignature;
-        await processImageAttachment(lastMessage, { imageUrls });
-        if (power_user.message_token_count_enabled) {
-            const tokenCountText = (reasoning || '') + lastMessage.mes;
-            lastMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
-        }
-        const chat_id = (chat.length - 1);
-        !fromStreaming && await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type);
-        addOneMessage(chat[chat_id], { type: 'swipe' });
-        !fromStreaming && await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
-    } else if (type === 'appendFinal') {
-        oldMessage = lastMessage.mes;
-        console.debug('Trying to appendFinal.');
-        lastMessage.title = title;
-        lastMessage.mes = getMessage;
-        lastMessage.gen_started = generation_started;
-        lastMessage.gen_finished = generationFinished;
-        lastMessage.send_date = getMessageTimeStamp();
-        lastMessage.extra.api = getGeneratingApi();
-        lastMessage.extra.model = getGeneratingModel();
-        lastMessage.extra.reasoning += reasoning;
-        lastMessage.extra.reasoning_signature = reasoningSignature;
-        await processImageAttachment(lastMessage, { imageUrls });
-        // We don't know if the reasoning duration extended, so we don't update it here on purpose.
-        if (power_user.message_token_count_enabled) {
-            const tokenCountText = (reasoning || '') + lastMessage.mes;
-            lastMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
-        }
-        const chat_id = (chat.length - 1);
-        !fromStreaming && await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type);
-        addOneMessage(chat[chat_id], { type: 'swipe' });
-        !fromStreaming && await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
-    } else {
-        console.debug('entering chat update routine for non-swipe post');
-        const newMessage = {};
-        chat.push(newMessage);
-        newMessage.extra = {};
-        newMessage.name = name2;
-        newMessage.is_user = false;
-        newMessage.send_date = getMessageTimeStamp();
-        newMessage.extra.api = getGeneratingApi();
-        newMessage.extra.model = getGeneratingModel();
-        newMessage.extra.reasoning = reasoning;
-        newMessage.extra.reasoning_duration = null;
-        newMessage.extra.reasoning_signature = reasoningSignature;
-        if (power_user.trim_spaces) {
-            getMessage = getMessage.trim();
-        }
-        newMessage.mes = getMessage;
-        newMessage.title = title;
-        newMessage.gen_started = generation_started;
-        newMessage.gen_finished = generationFinished;
-
-        if (power_user.message_token_count_enabled) {
-            const tokenCountText = (reasoning || '') + newMessage.mes;
-            newMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
-        }
-
-        if (selected_group) {
-            console.debug('entering chat update for groups');
-            let avatarImg = 'img/ai4.png';
-            if (characters[this_chid].avatar != 'none') {
-                avatarImg = getThumbnailUrl('avatar', characters[this_chid].avatar);
-            }
-            newMessage.force_avatar = avatarImg;
-            newMessage.original_avatar = characters[this_chid].avatar;
-            newMessage.extra.gen_id = group_generation_id;
-        }
-
-        await processImageAttachment(newMessage, { imageUrls });
-        const chat_id = (chat.length - 1);
-
-        !fromStreaming && await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type);
-        addOneMessage(chat[chat_id]);
-        !fromStreaming && await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
-    }
-
-    const item = chat[chat.length - 1];
-    if (item.swipe_info === undefined) {
-        item.swipe_info = [];
-    }
-    if (item.swipe_id !== undefined) {
-        const swipeId = item.swipe_id;
-        item.swipes[swipeId] = item.mes;
-        item.swipe_info[swipeId] = {
-            send_date: item.send_date,
-            gen_started: item.gen_started,
-            gen_finished: item.gen_finished,
-            extra: structuredClone(item.extra),
-        };
-    } else {
-        item.swipe_id = 0;
-        item.swipes = [];
-        item.swipes[0] = item.mes;
-        item.swipe_info[0] = {
-            send_date: item.send_date,
-            gen_started: item.gen_started,
-            gen_finished: item.gen_finished,
-            extra: structuredClone(item.extra),
-        };
-    }
-
-    if (Array.isArray(swipes) && swipes.length > 0) {
-        const swipeInfoExtra = structuredClone(item.extra ?? {});
-        delete swipeInfoExtra.token_count;
-        delete swipeInfoExtra.reasoning;
-        delete swipeInfoExtra.reasoning_duration;
-        const swipeInfo = {
-            send_date: item.send_date,
-            gen_started: item.gen_started,
-            gen_finished: item.gen_finished,
-            extra: swipeInfoExtra,
-        };
-        const swipeInfoArray = Array(swipes.length).fill().map(() => structuredClone(swipeInfo));
-        parseReasoningInSwipes(swipes, swipeInfoArray, item.extra?.reasoning_duration);
-        item.swipes.push(...swipes);
-        item.swipe_info.push(...swipeInfoArray);
-    }
-
-    statMesProcess(item, type, characters, this_chid, oldMessage);
-    return { type, getMessage };
-}
+export async function saveReply(...args) { return getTavernStageCore().saveReply.apply(this, args); }
 
 /**
  * Creates a message's `swipes`, `swipe_id` and `swipe_info` if necessary.
@@ -6977,38 +4694,9 @@ function saveImageToMessage(img, mes) {
     }
 }
 
-export function getGeneratingApi() {
-    switch (main_api) {
-        case 'openai':
-            return oai_settings.chat_completion_source || 'openai';
-        case 'textgenerationwebui':
-            return textgen_settings.type === textgen_types.OOBA ? 'textgenerationwebui' : textgen_settings.type;
-        default:
-            return main_api;
-    }
-}
+export function getGeneratingApi(...args) { return getTavernStageCore().getGeneratingApi.apply(this, args); }
 
-export function getGeneratingModel(mes) {
-    let model = '';
-    switch (main_api) {
-        case 'kobold':
-            model = online_status;
-            break;
-        case 'novel':
-            model = nai_settings.model_novel;
-            break;
-        case 'openai':
-            model = getChatCompletionModel();
-            break;
-        case 'textgenerationwebui':
-            model = online_status;
-            break;
-        case 'koboldhorde':
-            model = kobold_horde_model;
-            break;
-    }
-    return model;
-}
+export function getGeneratingModel(...args) { return getTavernStageCore().getGeneratingModel.apply(this, args); }
 
 /**
  * A function mainly used to switch 'generating' state - setting it to false and activating the buttons again
@@ -8863,52 +6551,20 @@ function select_rm_characters() {
  * @param {boolean} scan Should the prompt be included in the world info scan.
  * @param {(function(): Promise<boolean>|boolean)} filter Filter function to determine if the prompt should be injected.
  */
-export function setExtensionPrompt(key, value, position, depth, scan = false, role = extension_prompt_roles.SYSTEM, filter = null) {
-    extension_prompts[key] = {
-        value: String(value),
-        position: Number(position),
-        depth: Number(depth),
-        scan: !!scan,
-        role: Number(role ?? extension_prompt_roles.SYSTEM),
-        filter: filter,
-    };
-}
+export function setExtensionPrompt(...args) { return getTavernStageCore().setExtensionPrompt.apply(this, args); }
 
 /**
  * Gets a enum value of the extension prompt role by its name.
  * @param {string} roleName The name of the extension prompt role.
  * @returns {number} The role id of the extension prompt.
  */
-export function getExtensionPromptRoleByName(roleName) {
-    // If the role is already a valid number, return it
-    if (typeof roleName === 'number' && Object.values(extension_prompt_roles).includes(roleName)) {
-        return roleName;
-    }
-
-    switch (roleName) {
-        case 'system':
-            return extension_prompt_roles.SYSTEM;
-        case 'user':
-            return extension_prompt_roles.USER;
-        case 'assistant':
-            return extension_prompt_roles.ASSISTANT;
-    }
-
-    // Skill issue?
-    return extension_prompt_roles.SYSTEM;
-}
+export function getExtensionPromptRoleByName(...args) { return getTavernStageCore().getExtensionPromptRoleByName.apply(this, args); }
 
 /**
  * Removes all char A/N prompt injections from the chat.
  * To clean up when switching from groups to solo and vice versa.
  */
-export function removeDepthPrompts() {
-    for (const key of Object.keys(extension_prompts)) {
-        if (key.startsWith(inject_ids.DEPTH_PROMPT)) {
-            delete extension_prompts[key];
-        }
-    }
-}
+export function removeDepthPrompts(...args) { return getTavernStageCore().removeDepthPrompts.apply(this, args); }
 
 /**
  * Adds or updates the metadata for the currently active chat.

@@ -12,7 +12,7 @@ permissions:
 jobs:
   project:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -22,3 +22,6 @@ jobs:
         with:
           node-version: 24
       - run: npm run check:tavernstage
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run check:extraction
+      - run: npm run test:tavernstage

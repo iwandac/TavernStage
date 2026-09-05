@@ -1,4 +1,5 @@
 import { localforage } from '../lib.js';
+import { countOpenAI } from './tavernstage/token-count.js';
 import { characters, event_types, eventSource, main_api, nai_settings, online_status, this_chid } from '../script.js';
 import { power_user, registerDebugFunction } from './power-user.js';
 import { chat_completion_sources, model_list, oai_settings } from './openai.js';
@@ -845,28 +846,9 @@ export function countTokensOpenAI(messages, full = false) {
  */
 export async function countTokensOpenAIAsync(messages, full = false) {
     const tokenizerEndpoint = `/api/tokenizers/openai/count?model=${getTokenizerModel()}`;
-    const cacheObject = getTokenCacheObject();
-
-    if (!Array.isArray(messages)) {
-        messages = [messages];
-    }
-
-    let token_count = -1;
-
-    for (const message of messages) {
-        const model = getTokenizerModel();
-
-        if (model === 'claude') {
-            full = true;
-        }
-
-        const hash = getStringHash(JSON.stringify(message));
-        const cacheKey = `${model}-${hash}`;
-        const cachedCount = cacheObject[cacheKey];
-
-        if (typeof cachedCount === 'number') {
-            token_count += cachedCount;
-        } else {
+    return countOpenAI(messages, full, {
+        getModel: getTokenizerModel, cache: getTokenCacheObject(), hash: getStringHash,
+        countOne: async (message) => {
             const data = await jQuery.ajax({
                 async: true,
                 type: 'POST', //
@@ -876,14 +858,9 @@ export async function countTokensOpenAIAsync(messages, full = false) {
                 contentType: 'application/json',
             });
 
-            token_count += Number(data.token_count);
-            cacheObject[cacheKey] = Number(data.token_count);
-        }
-    }
-
-    if (!full) token_count -= 2;
-
-    return token_count;
+            return data.token_count;
+        },
+    });
 }
 
 /**

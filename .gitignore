@@ -58,6 +58,7 @@ public/scripts/extensions/third-party
 yarn.lock
 *.code-workspace
 test-results/
+/tests/output/
 
 # Project documentation stays local; only the root README is published.
 # Already tracked upstream asset documentation and licenses remain intact.

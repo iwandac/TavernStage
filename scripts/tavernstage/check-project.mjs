@@ -28,8 +28,16 @@ assert.deepEqual(manifest.evolutionPolicy, {
     scopeReductionRequiresOwnerDecision: true,
 });
 assert.match(manifest.upstream.commit, /^[0-9a-f]{40}$/);
-assert.equal(manifest.stage, 'source-bootstrap', 'Update this gate with evidence when runtime extraction lands.');
-assert.equal(manifest.runtimeAvailable, false);
+assert.equal(manifest.stage, 'headless-g1');
+assert.equal(manifest.runtimeAvailable, true);
+assert.deepEqual(manifest.runtime, {
+    entrypoint: 'src/tavernstage/runtime.js',
+    stability: 'experimental',
+    acceptedGate: 'G1',
+    productionReady: false,
+});
+assert.match(read(manifest.runtime.entrypoint), /export function createSession/);
+assert.match(read(manifest.runtime.entrypoint), /export async function runTurn/);
 assert.equal(manifest.runtimeVersion, null);
 assert.equal(manifest.releaseTagPrefix, 'tavernstage-v');
 assert.equal(pkg.name, 'tavernstage');
@@ -72,4 +80,4 @@ for (const path of git('ls-files', '-z').split('\0').filter(Boolean)) {
         assert.ok(path === 'README.md' || inheritedAssetDocs.has(path), `Only README and inherited asset documentation may be tracked: ${path}`);
     }
 }
-console.log('TavernStage bootstrap identity, provenance, lock, workflow and documentation checks passed. Runtime behavior was not tested.');
+console.log('TavernStage identity, provenance, lock, workflow and documentation checks passed. Run the separate runtime and extraction gates; this check alone does not validate behavior.');

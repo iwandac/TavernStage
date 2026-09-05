@@ -1,3 +1,11 @@
+// TavernStage shared core. Browser imports retain original singleton initialization.
+import { createCore as createTavernStageCore } from '../../tavernstage/scripts-macros-engine-MacroFlags.js';
+var tavernStageCore;
+function getTavernStageCore() {
+    return tavernStageCore ??= createTavernStageCore({
+        get console() { return console; },
+    });
+}
 /**
  * Macro Execution Flags - modifiers that change how macros are resolved at runtime.
  *
@@ -24,57 +32,7 @@
  * @readonly
  * @enum {string}
  */
-export const MacroFlagType = Object.freeze({
-    /**
-     * Immediate resolve flag (`!`).
-     * This macro will be resolved first (in order of appearance) before "normal" macros.
-     * @status TBD - Not implemented in v1
-     */
-    IMMEDIATE: '!',
-
-    /**
-     * Delayed resolve flag (`?`).
-     * This macro will be resolved last (in order of appearance) after "normal" macros.
-     * @status TBD - Not implemented in v1
-     */
-    DELAYED: '?',
-
-    /**
-     * Re-evaluate flag (`~`).
-     * Marks a macro for potential re-evaluation.
-     * @status TBD - Not implemented in v1
-     */
-    REEVALUATE: '~',
-
-    /**
-     * Filter/pipe flag (`>`).
-     * Indicates that this macro should resolve `|` characters as output filters.
-     * @status Parsed - Filter feature not yet implemented
-     */
-    FILTER: '>',
-
-    /**
-     * Closing block flag (`/`).
-     * Marks this macro as the closing block of a scoped macro with the same identifier.
-     * A closing block macro does not support arguments itself.
-     * Example: `{{setvar::myvar}}long text{{/setvar}}`
-     * @status Implemented - Content between opening and closing tags becomes the last unnamed argument
-     */
-    CLOSING_BLOCK: '/',
-
-    /**
-     * Preserve whitespace flag (`#`).
-     * Prevents automatic trimming of scoped content.
-     * By default, scoped macro content is trimmed. Use this flag to preserve leading/trailing whitespace.
-     * Also provides backwards compatibility with legacy handlebars-style syntax like `{{#if ...}}`.
-     * Example: `{{#setvar::myvar}}  content with spaces  {{/setvar}}`
-     * @status Implemented - Prevents auto-trim on scoped content
-     */
-    PRESERVE_WHITESPACE: '#',
-
-    // Note: Variable shorthand (. and $) are NOT flags - they are special prefixes
-    // that trigger the variable expression parsing branch. See MacroLexer.js Var tokens.
-});
+export const MacroFlagType = getTavernStageCore().MacroFlagType;
 
 /**
  * @typedef {Object} MacroFlagDefinition
@@ -90,74 +48,21 @@ export const MacroFlagType = Object.freeze({
  *
  * @type {Map<string, MacroFlagDefinition>}
  */
-export const MacroFlagDefinitions = new Map([
-    [MacroFlagType.IMMEDIATE, {
-        type: MacroFlagType.IMMEDIATE,
-        name: 'Immediate',
-        description: 'Resolve this macro before other macros in the same text.',
-        implemented: false,
-        affectsParser: false,
-    }],
-    [MacroFlagType.DELAYED, {
-        type: MacroFlagType.DELAYED,
-        name: 'Delayed',
-        description: 'Resolve this macro after other macros in the same text.',
-        implemented: false,
-        affectsParser: false,
-    }],
-    [MacroFlagType.REEVALUATE, {
-        type: MacroFlagType.REEVALUATE,
-        name: 'Re-evaluate',
-        description: 'Mark this macro for re-evaluation.',
-        implemented: false,
-        affectsParser: false,
-    }],
-    [MacroFlagType.FILTER, {
-        type: MacroFlagType.FILTER,
-        name: 'Filter',
-        description: 'Enable pipe-based output filters for this macro.',
-        implemented: false,
-        affectsParser: true, // Changes how `|` is parsed
-    }],
-    [MacroFlagType.CLOSING_BLOCK, {
-        type: MacroFlagType.CLOSING_BLOCK,
-        name: 'Closing Block',
-        description: 'Marks this as a closing block for a scoped macro.',
-        implemented: true,
-        affectsParser: false,
-    }],
-    [MacroFlagType.PRESERVE_WHITESPACE, {
-        type: MacroFlagType.PRESERVE_WHITESPACE,
-        name: 'Preserve Whitespace',
-        description: 'Prevent automatic trimming of scoped content (legacy # syntax).',
-        implemented: true,
-        affectsParser: false,
-    }],
-]);
+export const MacroFlagDefinitions = getTavernStageCore().MacroFlagDefinitions;
 
 /**
  * Set of all valid flag symbols for quick lookup.
  *
  * @type {Set<string>}
  */
-export const ValidFlagSymbols = new Set(Object.values(MacroFlagType));
+export const ValidFlagSymbols = getTavernStageCore().ValidFlagSymbols;
 
 /**
  * Creates a default MacroFlags object with all flags set to false.
  *
  * @returns {MacroFlags}
  */
-export function createEmptyFlags() {
-    return {
-        immediate: false,
-        delayed: false,
-        reevaluate: false,
-        filter: false,
-        closingBlock: false,
-        preserveWhitespace: false,
-        raw: [],
-    };
-}
+export function createEmptyFlags(...args) { return getTavernStageCore().createEmptyFlags.apply(this, args); }
 
 /**
  * Parses an array of flag symbols into a MacroFlags object.
@@ -165,37 +70,7 @@ export function createEmptyFlags() {
  * @param {string[]} flagSymbols - Array of flag symbol strings (e.g., ['!', '?']).
  * @returns {MacroFlags}
  */
-export function parseFlags(flagSymbols) {
-    const flags = createEmptyFlags();
-
-    for (const symbol of flagSymbols) {
-        switch (symbol) {
-            case MacroFlagType.IMMEDIATE:
-                flags.immediate = true;
-                break;
-            case MacroFlagType.DELAYED:
-                flags.delayed = true;
-                break;
-            case MacroFlagType.REEVALUATE:
-                flags.reevaluate = true;
-                break;
-            case MacroFlagType.FILTER:
-                flags.filter = true;
-                break;
-            case MacroFlagType.CLOSING_BLOCK:
-                flags.closingBlock = true;
-                break;
-            case MacroFlagType.PRESERVE_WHITESPACE:
-                flags.preserveWhitespace = true;
-                break;
-            default:
-                console.warn(`Can't parse unknown macro flag: ${symbol}`);
-        }
-        flags.raw.push(symbol);
-    }
-
-    return flags;
-}
+export function parseFlags(...args) { return getTavernStageCore().parseFlags.apply(this, args); }
 
 /**
  * Checks if a MacroFlags object has any flags set.
@@ -203,9 +78,7 @@ export function parseFlags(flagSymbols) {
  * @param {MacroFlags} flags - The flags object to check.
  * @returns {boolean} True if at least one flag is set.
  */
-export function hasAnyFlag(flags) {
-    return flags.raw.length > 0;
-}
+export function hasAnyFlag(...args) { return getTavernStageCore().hasAnyFlag.apply(this, args); }
 
 /**
  * Gets the flag definition for a given symbol.
@@ -213,9 +86,7 @@ export function hasAnyFlag(flags) {
  * @param {string} symbol - The flag symbol (e.g., '!').
  * @returns {MacroFlagDefinition|undefined}
  */
-export function getFlagDefinition(symbol) {
-    return MacroFlagDefinitions.get(symbol);
-}
+export function getFlagDefinition(...args) { return getTavernStageCore().getFlagDefinition.apply(this, args); }
 
 /**
  * Checks if a given symbol is a valid macro flag.
@@ -223,6 +94,4 @@ export function getFlagDefinition(symbol) {
  * @param {string} symbol - The symbol to check.
  * @returns {boolean}
  */
-export function isValidFlag(symbol) {
-    return ValidFlagSymbols.has(symbol);
-}
+export function isValidFlag(...args) { return getTavernStageCore().isValidFlag.apply(this, args); }
