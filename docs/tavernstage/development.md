@@ -17,11 +17,17 @@ TavernStage 是 SillyTavern 的派生运行时项目，目标是保留完整 ST 
 | `codex/upstream-sync-<topic>` | 上游升级、冲突处理与对照验证 | 是，通过后合入 `main` 并删除 |
 | `tavernstage-v*` | 未来 TavernStage 自身的发布标签 | 当前尚无运行时发布 |
 
-`main` 是唯一长期分支。不保留继承的功能分支，也不另设 `upstream/stable`、`upstream/staging` 镜像分支。官方仍使用 `release` 与 `staging`；本地通过 fetch 保存为 `refs/remotes/upstream/release` 与 `refs/remotes/upstream/staging`。这些远程跟踪引用不是本项目的开发或发布分支，不需要切换到它们才能合并。原有上游标签和提交属于历史来源，不表示 TavernStage 的发布或支持承诺。
+`main` 是唯一长期分支。不保留继承的功能分支，也不另设 `upstream/stable`、`upstream/staging` 镜像分支。官方仍使用 `release` 与 `staging`；本地通过 fetch 保存为 `refs/remotes/upstream/release` 与 `refs/remotes/upstream/staging`。这些远程跟踪引用不是本项目的开发或发布分支，不需要切换到它们才能合并。`staging` 仅供候选变化预览或有明确理由的升级，不会自动合入 `main`。
+
+本地 `main` 应跟踪自己的 `origin/main`，即 `branch.main.remote=origin`、`branch.main.merge=refs/heads/main`。`tavernstage.json` 中的 `upstream.branch: release` 表示升级候选来源，配合上游 SHA 记录实际采用点，不是本地 `main` 的跟踪设置。GitHub fork 页面显示官方 `release` 为比较基线或父仓库来源，也不代表本地跟踪、自动同步或覆盖；独立演化无需切断 fork 关系和共同祖先。
+
+标签只保留未来 TavernStage 自身的 `tavernstage-v*` 发行标识。继承的 102 个上游标签及 13 个分支归档标签已按用户指令直接删除，不维护备份或恢复流程；见 [清理记录](branch-cleanup-2026-09-05.md)。上游来源版本和提交继续记录在清单中，不需要把官方标签重新发布到本仓库。
 
 `origin` 应指向 `https://github.com/iwandac/TavernStage.git`，`upstream` 应指向 `https://github.com/SillyTavern/SillyTavern.git`。修改只推送至自己的仓库。
 
 新克隆通常只有 `origin`；确认尚无 `upstream` 后执行 `git remote add upstream https://github.com/SillyTavern/SillyTavern.git`。若已存在则核对地址，不重复添加或未经检查覆盖它。
+
+随后执行 `git config remote.upstream.tagOpt --no-tags`，让上游抓取默认不导入官方标签；下文命令仍显式使用 `--no-tags`。此设置仅针对官方远端，不禁用 `origin` 获取未来自有发行标签。发布标签时推送明确的目标引用，不使用 `git push --tags` 或 `--mirror` 把临时恢复标签、上游标签带回远端。
 
 项目身份、阶段与采用的上游提交记录在根 `tavernstage.json`。根 `package.json` 暂保留继承宿主的 `1.18.0` 兼容性版本，不能用它宣称 TavernStage 已发布 `1.18.0`；未来运行时版本需与上游来源版本分别记录。
 
