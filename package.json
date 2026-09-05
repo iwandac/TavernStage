@@ -108,15 +108,18 @@
             "whatwg-url": "^14.0.0"
         }
     },
-    "name": "sillytavern",
+    "name": "tavernstage",
+    "private": true,
+    "description": "SillyTavern-derived roleplay runtime project; currently source bootstrap, not a headless runtime release.",
     "type": "module",
     "license": "AGPL-3.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/SillyTavern/SillyTavern.git"
+        "url": "https://github.com/iwandac/TavernStage.git"
     },
     "version": "1.18.0",
     "scripts": {
+        "check:tavernstage": "node scripts/tavernstage/check-project.mjs",
         "init": "node src/server-init.js",
         "start": "node server.js",
         "debug": "node --inspect server.js",

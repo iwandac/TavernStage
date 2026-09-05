@@ -1,25 +1,17 @@
-# Security Policy
+# TavernStage Security Policy
 
-We take the security of this project seriously. If you discover any security vulnerabilities or have concerns regarding the security of this repository, please reach out to us immediately. We appreciate your efforts in responsibly disclosing the issue and will make every effort to address it promptly.
+## 当前边界
 
-## Reporting a Vulnerability
+TavernStage 处于源码引入与项目初始化阶段，尚无受支持的生产运行时版本、响应时限或安全维护期限。保留的 SillyTavern 宿主不等于已验证的多租户服务；不要据此直接向互联网开放，也不要将私人聊天、真实凭据或不可信扩展用于初始化验收。
 
-To report a security vulnerability, please follow these steps:
+后续开放服务前仍需验证会话与租户隔离、凭据边界、数据生命周期、资源限制、依赖风险和更新恢复。无头化本身不意味着这些问题已解决。
 
-1. Go to the **Security** tab of this repository on GitHub.
-2. Click on **"Report a vulnerability"**.
-3. Provide a clear description of the vulnerability and its potential impact. Be as detailed as possible.
-4. If applicable, include steps or a PoC (Proof of Concept) to reproduce the vulnerability.
-5. Submit the report.
+## 报告问题
 
-Once we receive the private report notification, we will promptly investigate and assess the reported vulnerability.
+请向 [TavernStage 仓库](https://github.com/iwandac/TavernStage) 的维护者报告 TavernStage 特有问题，不要假定 SillyTavern 团队负责本派生项目。
 
-Please do not disclose any potential vulnerabilities in public repositories, issue trackers, or forums until we have had a chance to review and address the issue.
+如果仓库的 **Security** 页面提供 **Report a vulnerability**，请使用该私密入口。该入口是否可用取决于仓库设置，本说明不保证已开启；若不可用，可先通过普通 issue 请求建立私密沟通渠道，但不要附带漏洞利用步骤、凭据、私人数据或可被立即滥用的细节。不要在公开 issue 或 PR 中提交敏感报告。
 
-## Scope
+私密报告可包含受影响提交、影响范围、最小复现与经过脱敏的证据。维护者目前不承诺响应 SLA、奖励或修复时限。
 
-This security policy applies to all the code and files within this repository and its dependencies actively maintained by us. If you encounter a security issue in a dependency that is not directly maintained by us, please follow responsible disclosure practices and report it to the respective project.
-
-While we strive to ensure the security of this project, please note that there may be limitations on resources, response times, and mitigations.
-
-Thank you for your help in making this project more secure.
+若问题位于未改动的 SillyTavern 或其他依赖中，请同时遵循相应上游的安全报告流程；本仓库的源码镜像不是这些上游的报告渠道。
