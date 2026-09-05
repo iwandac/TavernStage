@@ -59,7 +59,7 @@ export function createSession({ character, userName = 'User', history = [], chat
     const settings = copy(profile.settings);
     const powerUser = copy(profile.powerUser);
     if (settings.chat_completion_source !== 'custom') unsupported('provider: only custom chat-completion host is currently adapted');
-    if (settings.stream_openai) unsupported('streaming: use the non-streaming G1 host');
+    if (settings.stream_openai && !host.supportsStreaming) unsupported('streaming host');
     if (powerUser.auto_swipe || powerUser.auto_continue?.enabled) unsupported('automatic continuation');
     for (const message of history) {
         if (message.extra?.file || message.extra?.media?.length || message.extra?.image || message.extra?.video || message.extra?.audio) unsupported('media-bearing history');
@@ -84,7 +84,7 @@ export function createSession({ character, userName = 'User', history = [], chat
         static now() { return clock(); }
     };
     const sessionMoment = Object.assign((...args) => moment(...(args.length ? args : [clock()])), moment);
-    const storage = new Map();
+    const storage = new Map(profile.accountStorage ?? []);
     const local = {
         ...constants, Date: SessionDate, Math: Object.assign(Object.create(Math), { random: host.random ?? Math.random }),
         structuredClone, chevrotain, Handlebars: Handlebars.create(), moment: sessionMoment, seedrandom: host.seedrandom ?? seedrandom, droll: host.dice ?? droll,
@@ -235,9 +235,15 @@ export function createSession({ character, userName = 'User', history = [], chat
         if (state.faults.length) throw new Error(`Incomplete host semantics: ${state.faults.join(', ')}`);
         if (local.promptManager.error) throw new Error(`Prompt preparation failed: ${local.promptManager.error}`);
         const { generate_data } = await local.createGenerationParameters(settings, local.getChatCompletionModel(), type, prompt, options);
-        state.requests.push(copy(generate_data));
+        // Tool definitions have browser-only toString methods. The network
+        // projection, as in ST's JSON transport, deliberately serializes them.
+        const request = JSON.parse(JSON.stringify(generate_data));
+        state.requests.push(copy(request));
         if (state.requests.length > 16) state.requests.shift();
-        const result = await host.generate(copy(generate_data), { signal: local.abortController.signal });
+        const result = await host.generate(request, {
+            signal: local.abortController.signal,
+            parseToolCalls: (calls, chunk) => local.ToolManager.parseToolCalls(calls, chunk),
+        });
         local.abortController.signal.throwIfAborted();
         return result;
     };
@@ -248,8 +254,16 @@ export function createSession({ character, userName = 'User', history = [], chat
     local.initMacros();
     local.registerAuthorsNoteMacros();
     local.registerReasoningMacros();
+    for (const tool of host.tools ?? []) {
+        local.ToolManager.registerFunctionTool({ ...tool, action: async parameters => {
+            try { return await host.invokeTool(tool.name, copy(parameters), { signal: local.abortController.signal }); }
+            catch (error) { local.abortController.abort(error); throw error; }
+        } });
+    }
+    // Formatting is a presentation port, not a replacement tool/prompt loop.
+    local.toolPresentation = host.toolPresentation ?? (invocations => JSON.stringify(invocations));
     const session = Object.freeze({ id });
-    sessions.set(session, { state, local, host });
+    sessions.set(session, { state, local, host, profile, worlds, storage, userName });
     return session;
 }
 
@@ -292,4 +306,15 @@ export function disposeSession(session) {
     owned.state.disposed = true;
     owned.local.abortController?.abort('Session disposed');
     sessions.delete(session);
+}
+
+/** Complete rehydration input, not merely visible chat. No callbacks or credentials. */
+export function exportSession(session) {
+    const owned = sessions.get(session);
+    if (!owned || owned.state.disposed || owned.state.running) throw new Error('Session cannot be exported');
+    const { state, local, profile, worlds, storage, userName } = owned;
+    return copy({ id: state.id, character: state.character, userName, history: state.history,
+        chatMetadata: state.metadata, worlds, profile: { ...profile, settings: local.oai_settings,
+            powerUser: local.power_user, extensionSettings: local.extension_settings,
+            extensionPrompts: local.extension_prompts, accountStorage: [...storage] } });
 }

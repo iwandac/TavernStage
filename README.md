@@ -6,11 +6,12 @@ TavernStage 由独立维护者开发，不是 SillyTavern 官方发行版。首�
 
 ## 当前状态
 
-**G1：已有实验性 Node 无浏览器角色运行时，尚不是生产运行时。** 原 SillyTavern 浏览器宿主与 Node 入口实际使用同一份抽取核心；原界面、Node 服务与上游源码保留，继续作为生态适配和上游更新的基础。
+**G2：已有可嵌入、流式、可取消和通过宿主恢复的实验性 Node 角色运行时，尚不是生产运行时。** 原 SillyTavern 浏览器宿主与 Node 入口实际使用同一份抽取核心；原界面、Node 服务与上游源码保留，继续作为生态适配和上游更新的基础。
 
 - 已验证：公开社区 Sakana/Amy 角色在正常生成、重新生成、长历史预算截断中的请求与状态对照；另有明确标注的协议夹具覆盖递归世界书、变量宏、三位置正则和工具历史。默认新版宏引擎没有被关闭来通过验收。
-- 真实模型：固定本地 Ollama Qwen3.6 的非流式文本回合；Node 直接生成并提交回复，不运行浏览器、jsdom 或简化提示词器。随机模型回复不要求逐字一致；协议与状态另用原版真实响应回放精确比较。
-- 待实现与验证：流式输出、跨进程会话恢复、工具副作用回执、其它供应商的 Node 宿主适配、完整扩展生态，以及酒馆角色卡的产品接线。
+- 真实模型：固定本地 Ollama Qwen3.6 的非流式及流式文本回合、收到草稿后的取消；Node 直接生成，不运行浏览器、jsdom 或简化提示词器。随机模型回复不要求逐字一致；协议与状态另用原版真实响应回放精确比较。
+- 已验证的恢复边界：模型响应、工具副作用与最终提交后未收到确认时，终止测试进程并重建，查询原回合/回执而不重复调用。确定性故障测试不是生产存储或模型可查询性证明。
+- 待实现与验证：生产权威存储/部署适配、其它供应商的 Node 宿主适配、完整扩展生态，以及酒馆角色卡的产品接线。
 - 尚未验证：Cloudflare Workers 直接运行、扩展兼容性、生产可用性或高并发指标。完整生态是演进目标，不是当前已经实现的能力声明。
 
 `npm start` 仍启动继承的 SillyTavern 浏览器 + Node.js 宿主，不是 TavernStage 运行时 API。根 `package.json` 的 `1.18.0` 保留为继承宿主的兼容性版本，**不是 TavernStage 发布版本**；本项目尚未发布运行时版本。
@@ -41,16 +42,22 @@ npm run test:tavernstage
 
 `src/tavernstage/runtime.js` 导出 `createSession`、`runTurn`、`readSession`、`disposeSession`。调用方显式提供导入后的 ST 角色投影、历史、元数据、世界书，以及含 `settings`、`powerUser`、`extensionSettings` 的 ST 配置投影；原始卡片 JSON 不能冒充已导入投影。宿主提供真实分词、模型传输、事件与获准扩展端口，核心不读取用户目录或安装插件。
 
-`src/tavernstage/ollama-host.js` 提供本地 G1 适配器：必须指定字面 loopback 地址、`qwen3.6:latest` 和实际模型 digest；校验模型、拒绝重定向，并传递取消信号。它只适配非流式文本，不把未适配的媒体、schema、额外请求头或提示词后处理静默忽略。这里复用 ST 对该自定义模型的分词回退规则，不宣称这是 Qwen 的精确 token 数。
+`src/tavernstage/ollama-host.js` 提供本地文本适配器：必须指定字面 loopback 地址、`qwen3.6:latest` 和实际模型 digest；校验模型、拒绝重定向，并传递取消信号。它支持有界 SSE，拒绝不完整流、媒体、schema、额外请求头或未适配的提示词后处理。这里复用 ST 对该自定义模型的分词回退规则，不宣称这是 Qwen 的精确 token 数。
 
-会话目前是内存状态，接口和配置投影尚未稳定；不具备重启恢复或生产权限边界。工具历史可保留，不代表模型可以执行外部业务动作；额外插件、自动化及媒体宿主仍是显式迁移债务。`continue`/`swipe` 代码保留，但不冒称本轮已完成验收。调用结束后应释放会话和模型宿主。
+上述核心入口仍是内存上下文；可恢复调用使用 `src/tavernstage/managed-runtime.js` 的 `createRuntime({ authority, host, tools, limits })`，得到 `prepareSession`、`runTurn`、`recoverRun`、`readRun`、`readSession`、`cancelRun`、`dispose` 和 `inspect`。回合固定 sessionId/runId/baseRevision/generation/profileId/profileDigest/deadlineAtMs；重复 ID 不能换输入。每次运行使用独立核心上下文，只有确认提交才更新历史，流式文本只是替换式草稿，不含隐藏 reasoning 或工具参数。SSE 累积后的完整响应仍经原 ST 普通 Generate 完成路径处理，不宣称复制了原浏览器的全部流式 UI 行为。
+
+宿主必须实现 `authority.read/create/compareAndSwap(id, version, next, fence)`，在原子写入点校验 fence 中的 generation、revision 和 deadlineAtMs。capsule 保存完整重建输入、变量、世界书状态、随机熵、原回合 journal 和提交 candidate；调用方不得将凭据放进这些数据。工具由显式 host 验证、授权及执行，以 actionId/argsDigest 回执确认；恢复查询还须返回原已存 operationId/payloadDigest，不能简单回显查询参数。`queryModel`/工具 query 无已知结果时保持 suspended，不自动再次执行；本地 Ollama 适配器没有模型结果查询 API，因此真实调用结果丢失时不能自动补造成功。
+
+参考 `createMemoryAuthority` 最多保留 32 个会话（可收紧），不是持久数据库。默认上限：8 个活动调用、128 个回合/会话、2 MiB capsule、128 条且 256 KiB 历史、32 KiB 输入、16 KiB 输出、4 次工具调用、300 秒回合期限；每次模型请求最多 4096 输出 token。会话最多闲置 24 小时、绝对 7 天。满额拒绝新工作，不驱逐未知回执重新执行；忽略取消信号的外部工作继续占资源，不能以取消回执冒充已经停算。生产宿主仍须负责鉴权、撤销/删除 fence、存储清理及进程级资源隔离，同进程隔离不是不可信脚本或正则的 CPU 沙箱。
+
+额外插件、自动化及媒体宿主仍是显式迁移债务。`continue`/`swipe` 代码保留，但不冒称本轮已完成验收。调用结束后应释放运行时和模型宿主。
 
 ## 演进方向
 
 1. 维护已建立的核心源码映射与原版对照样本。
 2. 扩展显式会话上下文和宿主端口，继续迁移尚未适配的生态能力。
-3. 验证多会话隔离、取消、失败恢复与受控的模型调用。
-4. 先迁移一个真实历史修复验证维护路径；采用正式新版时再做完整升级验收，不把局部演练冒称完整升级。
+3. 在已有本地多会话/取消/恢复证据上，完成生产宿主与实际产品生命周期。
+4. 已迁移真实历史修复 `814734d`（流式工具 id/name/type 重复拼接），并用真实旧/新源码及派生执行路径验证；从固定基线加精确补丁重建，无隐藏上游 Git 对象依赖。采用正式新版时再做完整升级验收，不把局部演练冒称完整升级。
 5. 接入酒馆的已授权角色卡，完成真实对话与活动体验验收。
 
 `main` 是本项目唯一长期开发分支，跟踪 `origin/main`；实现与升级使用短期 `codex/*` 分支。通过 `upstream` 远端获取官方 `release` / `staging`（不导入 tags），在升级分支合并选定提交、完成迁移与测试，再合回 `main` 并更新项目清单。上游升级保留合并历史，不维护自己的上游镜像分支，也不因合并困难自行放弃生态覆盖。

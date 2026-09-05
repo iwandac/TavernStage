@@ -1,3 +1,4 @@
+const toolPresentation = null;
 
 // TavernStage shared core. Getters retain this browser host's live state.
 import { createCore as createTavernStageCore } from './tavernstage/scripts-tool-calling.js';
@@ -38,6 +39,7 @@ function getTavernStageCore() {
   get systemUserName() { return systemUserName; },
   get system_avatar() { return system_avatar; },
   get toastr() { return toastr; },
+  get toolPresentation() { return toolPresentation; },
  });
 }
 import { DOMPurify } from '../lib.js';

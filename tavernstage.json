@@ -3,13 +3,14 @@
   "name": "TavernStage",
   "repository": "https://github.com/iwandac/TavernStage",
   "mainBranch": "main",
-  "stage": "headless-g1",
+  "stage": "headless-g2",
   "runtimeVersion": null,
   "runtimeAvailable": true,
   "runtime": {
-    "entrypoint": "src/tavernstage/runtime.js",
+    "entrypoint": "src/tavernstage/managed-runtime.js",
+    "coreEntrypoint": "src/tavernstage/runtime.js",
     "stability": "experimental",
-    "acceptedGate": "G1",
+    "acceptedGate": "G2",
     "productionReady": false
   },
   "upstream": {

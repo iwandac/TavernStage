@@ -28,16 +28,18 @@ assert.deepEqual(manifest.evolutionPolicy, {
     scopeReductionRequiresOwnerDecision: true,
 });
 assert.match(manifest.upstream.commit, /^[0-9a-f]{40}$/);
-assert.equal(manifest.stage, 'headless-g1');
+assert.equal(manifest.stage, 'headless-g2');
 assert.equal(manifest.runtimeAvailable, true);
 assert.deepEqual(manifest.runtime, {
-    entrypoint: 'src/tavernstage/runtime.js',
+    entrypoint: 'src/tavernstage/managed-runtime.js',
+    coreEntrypoint: 'src/tavernstage/runtime.js',
     stability: 'experimental',
-    acceptedGate: 'G1',
+    acceptedGate: 'G2',
     productionReady: false,
 });
-assert.match(read(manifest.runtime.entrypoint), /export function createSession/);
-assert.match(read(manifest.runtime.entrypoint), /export async function runTurn/);
+assert.match(read(manifest.runtime.entrypoint), /export function createRuntime/);
+assert.match(read(manifest.runtime.coreEntrypoint), /export function createSession/);
+assert.match(read(manifest.runtime.coreEntrypoint), /export async function runTurn/);
 assert.equal(manifest.runtimeVersion, null);
 assert.equal(manifest.releaseTagPrefix, 'tavernstage-v');
 assert.equal(pkg.name, 'tavernstage');

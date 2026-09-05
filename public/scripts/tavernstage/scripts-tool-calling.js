@@ -488,7 +488,13 @@ class ToolManager {
             }
 
             if (typeof deltaValue === 'string') {
-                if (typeof targetValue === 'string') {
+                // `id`, `name`, `type` are sent in full by some providers on every
+                // streaming chunk; concatenating them would duplicate the value.
+                if (key === 'id' || key === 'name' || key === 'type') {
+                    if (!targetValue) {
+                        target[key] = deltaValue;
+                    }
+                } else if (typeof targetValue === 'string') {
                     // Concatenate strings
                     target[key] = targetValue + deltaValue;
                 } else {
@@ -770,6 +776,7 @@ class ToolManager {
      * @returns {string} Formatted message with tool invocations.
      */
     static #formatToolInvocationMessage(invocations) {
+        if (typeof __stage.toolPresentation === "function") return (0, __stage.toolPresentation)(invocations);
         const data = (0, __stage.structuredClone)(invocations);
         const detailsElement = __stage.document.createElement('details');
         const summaryElement = __stage.document.createElement('summary');

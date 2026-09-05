@@ -3,6 +3,7 @@ import { countOpenAI, countTiktokenMessages } from '../../public/scripts/taverns
 import { createCore as createUtils } from '../../public/scripts/tavernstage/scripts-utils.js';
 import { excludeKeysByYaml } from '../util.js';
 import { chatCompletionBody, customBodyParameters } from './request-body.js';
+import { readChatStream } from './stream-response.js';
 
 /** Explicit local G1 adapter. Construction performs no network or user-file reads. */
 export function createOllamaHost({ baseUrl, model, modelDigest, timeoutMs = 240_000, onExchange }, fetcher = globalThis.fetch) {
@@ -23,12 +24,14 @@ export function createOllamaHost({ baseUrl, model, modelDigest, timeoutMs = 240_
     const assertLive = () => { if (disposed) throw new Error('Ollama host disposed'); };
     const countMessages = async (messages, full = false) => {
         assertLive();
+        if (Object.keys(cache).length > 1024) for (const key of Object.keys(cache)) delete cache[key];
         return countOpenAI(messages, full, {
             getModel: () => tokenizerModel, cache, hash: getStringHash,
             countOne: message => countTiktokenMessages([message], tokenizerModel, tokenizer, () => {}),
         });
     };
     return {
+        supportsStreaming: true,
         tokenizerName: tokenizerModel,
         countMessages,
         countText: async (text, padding, { powerUser }) => {
@@ -38,10 +41,10 @@ export function createOllamaHost({ baseUrl, model, modelDigest, timeoutMs = 240_
             if (padding === powerUser.token_padding) return Math.ceil(new TextEncoder().encode(text).length / 3.35) + (padding ?? 0);
             return countMessages({ role: 'system', content: text }, true);
         },
-        generate: async (data, { signal } = {}) => {
+        generate: async (data, { signal, onDraft, parseToolCalls } = {}) => {
             assertLive();
             signal?.throwIfAborted();
-            if (data.chat_completion_source !== 'custom' || data.model !== model || data.stream
+            if (data.chat_completion_source !== 'custom' || data.model !== model || typeof data.stream !== 'boolean'
                 || data.custom_prompt_post_processing || data.json_schema || data.custom_include_headers) {
                 throw new Error('Unsupported G1 transport profile; no request was sent');
             }
@@ -53,7 +56,10 @@ export function createOllamaHost({ baseUrl, model, modelDigest, timeoutMs = 240_
             }
             const body = chatCompletionBody(structuredClone(data), false, '', bodyParams);
             excludeKeysByYaml(body, data.custom_exclude_body);
-            if (body.model !== model || body.stream !== false || body.response_format || body.json_schema || !Array.isArray(body.messages)
+            if (body.model !== model || body.stream !== data.stream || body.response_format || body.json_schema || !Array.isArray(body.messages)
+                || (body.n !== undefined && body.n !== 1) || (body.tools?.length > 4)
+                || !Number.isInteger(body.max_tokens ?? body.max_completion_tokens)
+                || (body.max_tokens ?? body.max_completion_tokens) < 1 || (body.max_tokens ?? body.max_completion_tokens) > 4096
                 || body.messages.some(message => typeof message.content !== 'string' && message.content !== null
                     && !(message.role === 'assistant' && message.content === undefined && Array.isArray(message.tool_calls) && message.tool_calls.length))) {
                 throw new Error('Final request violates the fixed model/non-streaming text boundary');
@@ -61,7 +67,7 @@ export function createOllamaHost({ baseUrl, model, modelDigest, timeoutMs = 240_
             const boundedSignal = AbortSignal.any([AbortSignal.timeout(timeoutMs), ...(signal ? [signal] : [])]);
             const tagsResponse = await fetcher(new URL('/api/tags', base), { signal: boundedSignal, redirect: 'error' });
             if (!tagsResponse.ok) throw new Error(`Ollama model inspection failed: ${tagsResponse.status}`);
-            const tags = await tagsResponse.json();
+            const tags = await readBoundedJson(tagsResponse, boundedSignal, 1024 * 1024);
             if (!tags.models?.some(entry => entry.name === model && entry.digest === modelDigest)) throw new Error('Ollama model digest changed');
             boundedSignal.throwIfAborted();
             const response = await fetcher(new URL('/v1/chat/completions', base), {
@@ -69,12 +75,34 @@ export function createOllamaHost({ baseUrl, model, modelDigest, timeoutMs = 240_
                 body: JSON.stringify(body), signal: boundedSignal,
             });
             if (!response.ok) throw new Error(`Ollama generation failed: ${response.status}`);
-            const result = await response.json();
+            const result = data.stream
+                ? await readChatStream(response, { signal: boundedSignal, onDraft, parseToolCalls })
+                : await readBoundedJson(response, boundedSignal, 2 * 1024 * 1024);
             boundedSignal.throwIfAborted();
             if (!Array.isArray(result.choices) || !result.choices.length) throw new Error('Invalid Ollama chat response');
+            if (!['stop', 'tool_calls'].includes(result.choices[0].finish_reason)) throw new Error('Incomplete model response');
             await onExchange?.({ request: structuredClone(body), response: structuredClone(result) });
             return result;
         },
         dispose: () => { if (!disposed) { disposed = true; tokenizer.free(); } },
     };
+}
+
+async function readBoundedJson(response, signal, maxBytes) {
+    if (!response.body) throw new Error('Missing response body');
+    const reader = response.body.getReader();
+    const chunks = []; let bytes = 0;
+    const cancel = () => { void reader.cancel(signal.reason).catch(() => {}); };
+    signal.addEventListener('abort', cancel, { once: true });
+    try {
+        while (true) {
+            signal.throwIfAborted();
+            const item = await reader.read(); signal.throwIfAborted();
+            if (item.done) break;
+            bytes += item.value.byteLength;
+            if (bytes > maxBytes) throw new Error('Response byte budget exceeded');
+            chunks.push(item.value);
+        }
+        return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    } finally { signal.removeEventListener('abort', cancel); await reader.cancel().catch(() => {}); reader.releaseLock(); }
 }

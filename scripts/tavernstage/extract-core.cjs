@@ -19,7 +19,8 @@ if (mode === '--write') assertWritable(root);
 const sha = JSON.parse(fs.readFileSync(path.join(root, 'tavernstage.json'), 'utf8')).upstream.commit;
 if (!/^[a-f0-9]{40}$/.test(sha)) throw new Error('Invalid pinned upstream SHA');
 function readPristine(source) {
- const content = require('node:child_process').execFileSync('git', ['show', sha + ':public/' + source], { cwd: root, encoding: 'utf8' });
+ let content = require('node:child_process').execFileSync('git', ['show', sha + ':public/' + source], { cwd: root, encoding: 'utf8' });
+ if (source === 'scripts/tool-calling.js') content = require('./upstream-tool-delta.cjs')(content);
  if (content.includes('TavernStage shared core')) throw new Error('Derived source cannot be an extraction input: ' + source);
  return content;
 }
@@ -86,6 +87,7 @@ for (const [source, names] of Object.entries(specs)) {
  if(source==='scripts/macros/definitions/core-macros.js') joined=joined.replace("(/** @type {HTMLTextAreaElement} */(document.querySelector('#send_textarea')))?.value ?? ''",'generationHost.readInput()');
  if(source==='scripts/macros/definitions/chat-macros.js') joined=joined.replace(/function getFirstDisplayedMessageId\(\) \{[\s\S]*?\n\}/,'function getFirstDisplayedMessageId() { return generationHost.firstDisplayedMessageId(); }');
  if(source==='scripts/macros/definitions/variable-macros.js') joined=joined.replace('SillyTavern.getContext()','getVariableContext()');
+ if(source==='scripts/tool-calling.js') joined=joined.replace('static #formatToolInvocationMessage(invocations) {', 'static #formatToolInvocationMessage(invocations) {\n        if (typeof toolPresentation === "function") return toolPresentation(invocations);');
  const parsed=acorn.parse(joined,{ecmaVersion:'latest',sourceType:'module',ranges:true});
  const analyzed=scope.analyze(parsed,{ecmaVersion:2024,sourceType:'module',optimistic:true,ignoreEval:true});
  const refs=analyzed.globalScope.through.filter(ref=>!standard.has(ref.identifier.name));
@@ -114,5 +116,5 @@ for (const [source, names] of Object.entries(specs)) {
  const contextPresentation=source==='script.js'?`, presentContextCount: count => { chatElement.find('.mes').removeClass('lastInContext'); const lastMessageBlock = chatElement.find('.mes:not([is_system="true"]), .mes.toolCall').eq(-count); lastMessageBlock.addClass('lastInContext'); if (lastMessageBlock.length === 0) { const firstMessageId = getFirstDisplayedMessageId(); chatElement.find(\`.mes[mesid="\${firstMessageId}"]\`).addClass('lastInContext'); } }`:'';
  const special=globals.includes('generationHost')?`const generationHost = { readInput: () => String($('#send_textarea').val()), writeInput: value => { $('#send_textarea').val(value)[0].dispatchEvent(new Event('input', { bubbles: true })); }, firstDisplayedMessageId: () => Number(document.querySelector('#chat .mes')?.getAttribute('mesid')), readAuthorNote: () => $('#extension_floating_prompt').val(), presentAuthorNoteCounter: value => $('#extension_floating_counter').text(value)${contextPresentation} };\n`:'';
  const binding=`\n// TavernStage shared core. Getters retain this browser host's live state.\nimport { createCore as createTavernStageCore } from '${relative}';\n${special}${globals.includes('getVariableContext')?'const getVariableContext = () => SillyTavern.getContext();\n':''}var tavernStageCore;\nfunction getTavernStageCore() {\n return tavernStageCore ??= createTavernStageCore({\n${globals.map(name=>`  get ${name}() { return ${name}; },${writers.has(name)?` set ${name}(value) { ${name} = value; },`:''}`).join('\n')}\n });\n}\n`;
- save(filename,binding+original);
+ save(filename,(globals.includes('toolPresentation') ? 'const toolPresentation = null;\n' : '')+binding+original);
 }
