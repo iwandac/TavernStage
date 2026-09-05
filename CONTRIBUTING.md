@@ -1,6 +1,6 @@
 # Contributing to TavernStage
 
-感谢帮助 TavernStage 将 SillyTavern 的角色扮演能力演进为可持续维护的运行时。请先阅读 [README](README.md) 与 [开发约定](docs/tavernstage/development.md)，区分现有源码、计划能力和已经验证的能力。
+感谢帮助 TavernStage 在保留完整 SillyTavern 生态、持续吸收上游更新的目标下演进为运行时。适配自身需求所需的迁移是本项目承担的工作，不因结构分歧自行缩减生态目标。请先阅读 [README](README.md) 与 [开发约定](docs/tavernstage/development.md)，区分现有源码、计划能力和已经验证的能力。
 
 ## 提交改动
 
@@ -8,13 +8,15 @@
 2. 提交一个完整、可验证的工作包；不要附带无关重命名、格式化或依赖升级。
 3. 执行 `npm run check:tavernstage`，并补充与实际改动相称的测试。该检查不能代替生成行为、会话隔离或真实接入验收。
 4. 向 [iwandac/TavernStage](https://github.com/iwandac/TavernStage) 的 `main` 提交 PR，说明目标、改动、验证证据、未覆盖项及上游影响。
+5. 合入后删除短期分支。上游升级 PR 必须保留上游合并祖先关系，不使用 squash 或 rebase 合入，也不使用 `merge -s ours` 假装采用上游变化。
 
-`upstream/stable` 和 `upstream/staging` 是上游原样基线，不接受 TavernStage 功能提交。需要贡献给 SillyTavern 的通用修复，应另按上游的贡献约定提交；不要把本仓库 PR 默认投向官方仓库。
+`main` 是唯一长期分支，不另建上游镜像分支。`upstream` 是官方仓库的远端名称；`refs/remotes/upstream/release` 和 `refs/remotes/upstream/staging` 是 fetch 获取的远程跟踪引用，不是我们发布或维护的分支。需要贡献给 SillyTavern 的通用修复，应另按上游的贡献约定提交；不要把本仓库 PR 默认投向官方仓库。
 
 ## 审查重点
 
 - 抽取逻辑须标明上游提交与来源文件，避免以另写一套近似逻辑代替既有语义。
 - 浏览器状态向会话上下文迁移时，提供与固定上游基线的行为对照，以及适用的跨会话污染、取消和失败测试。
+- 生态能力需要新宿主或适配器时，明确迁移方案与兼容性证据；未覆盖项保留为迁移债务，不以“只支持核心”默认为永久排除。迁移成本显著时报告并请求决策，不自行改变目标。
 - API、存储、网络或权限边界变更须先明确设计与验收；不要让运行时取得宿主的账户、房间或游戏裁决权。
 - 不提交真实凭据、私人聊天或未经授权的角色卡。测试样本应可公开使用，模型费用与外部数据传输须明确授权。
 - 文档以中文为当前权威说明；标识符与代码注释沿用英文。欢迎指出不一致，但不要把翻译与无关实现混成同一改动。

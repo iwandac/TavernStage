@@ -17,7 +17,16 @@ assert.equal(manifest.mainBranch, 'main');
 assert.equal(manifest.repository, 'https://github.com/iwandac/TavernStage');
 assert.equal(manifest.upstream.repository, 'https://github.com/SillyTavern/SillyTavern');
 assert.equal(manifest.upstream.branch, 'release');
-assert.equal(manifest.upstream.trackingBranch, 'upstream/stable');
+assert.equal(manifest.upstream.remote, 'upstream');
+assert.equal(manifest.upstream.trackingRef, 'refs/remotes/upstream/release');
+assert.equal(manifest.upstream.previewTrackingRef, 'refs/remotes/upstream/staging');
+assert.ok(!Object.hasOwn(manifest.upstream, 'trackingBranch'), 'Do not reintroduce fork mirror branches.');
+assert.deepEqual(manifest.evolutionPolicy, {
+    ecosystemGoal: 'complete-st-ecosystem',
+    upstreamUpdates: 'continuous-reviewed-integration',
+    migrationCost: 'accepted-to-meet-host-requirements',
+    scopeReductionRequiresOwnerDecision: true,
+});
 assert.match(manifest.upstream.commit, /^[0-9a-f]{40}$/);
 assert.equal(manifest.stage, 'source-bootstrap', 'Update this gate with evidence when runtime extraction lands.');
 assert.equal(manifest.runtimeAvailable, false);

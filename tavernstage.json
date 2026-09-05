@@ -9,10 +9,18 @@
   "upstream": {
     "repository": "https://github.com/SillyTavern/SillyTavern",
     "branch": "release",
-    "trackingBranch": "upstream/stable",
+    "remote": "upstream",
+    "trackingRef": "refs/remotes/upstream/release",
+    "previewTrackingRef": "refs/remotes/upstream/staging",
     "commit": "8172dcd0ee672d3cd9a5e5f7af134f91a45cd2b8",
     "packageVersion": "1.18.0"
   },
   "legacyPackageVersionPolicy": "Root package version belongs to the inherited ST host, not to a TavernStage runtime release.",
-  "releaseTagPrefix": "tavernstage-v"
+  "releaseTagPrefix": "tavernstage-v",
+  "evolutionPolicy": {
+    "ecosystemGoal": "complete-st-ecosystem",
+    "upstreamUpdates": "continuous-reviewed-integration",
+    "migrationCost": "accepted-to-meet-host-requirements",
+    "scopeReductionRequiresOwnerDecision": true
+  }
 }
