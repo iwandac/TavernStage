@@ -267,6 +267,24 @@ export function createSession({ character, userName = 'User', history = [], chat
     return session;
 }
 
+/** Initialize an empty chat using ST's first-message regex and macro semantics. */
+export function initializeGreeting(session, { greetingIndex = 0 } = {}) {
+    const owned = sessions.get(session);
+    if (!owned || owned.state.disposed || owned.state.running || owned.state.history.length) throw new Error('Greeting requires an empty idle session');
+    const { state, local } = owned;
+    const greetings = [state.character.first_mes || '', ...(state.character.data?.alternate_greetings ?? [])];
+    if (!Number.isInteger(greetingIndex) || greetingIndex < 0 || greetingIndex >= greetings.length) throw new TypeError('Invalid greeting index');
+    const text = greetings[greetingIndex];
+    if (typeof text !== 'string') throw new TypeError('Invalid greeting');
+    if (text) {
+        const message = { name: local.name2, is_user: false, is_system: false,
+            send_date: local.getMessageTimeStamp(), mes: local.getRegexedString(text, local.regex_placement.AI_OUTPUT), extra: {} };
+        state.history.push(message);
+        message.mes = local.substituteParams(message.mes);
+    }
+    return readSession(session);
+}
+
 export async function runTurn(session, { text = '', type = 'normal' } = {}, { signal } = {}) {
     const owned = sessions.get(session);
     if (!owned || owned.state.disposed) throw new Error('Session unavailable');

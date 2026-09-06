@@ -40,6 +40,8 @@ npm run test:tavernstage
 
 ## 实验性运行接口
 
+空会话可调用 `initializeGreeting(session, { greetingIndex })`，使用 ST 的正则和宏初始化默认/备选开场，不请求模型；`exportSession(session)` 返回完整重建输入，包括宏变量状态。该新增入口不改变未调用它的既有会话生成路径。
+
 `src/tavernstage/runtime.js` 导出 `createSession`、`runTurn`、`readSession`、`disposeSession`。调用方显式提供导入后的 ST 角色投影、历史、元数据、世界书，以及含 `settings`、`powerUser`、`extensionSettings` 的 ST 配置投影；原始卡片 JSON 不能冒充已导入投影。宿主提供真实分词、模型传输、事件与获准扩展端口，核心不读取用户目录或安装插件。
 
 `src/tavernstage/ollama-host.js` 提供本地文本适配器：必须指定字面 loopback 地址、`qwen3.6:latest` 和实际模型 digest；校验模型、拒绝重定向，并传递取消信号。它支持有界 SSE，拒绝不完整流、媒体、schema、额外请求头或未适配的提示词后处理。这里复用 ST 对该自定义模型的分词回退规则，不宣称这是 Qwen 的精确 token 数。

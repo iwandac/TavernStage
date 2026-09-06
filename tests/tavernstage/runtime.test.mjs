@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
-import { createSession, disposeSession, readSession, runTurn } from '../../src/tavernstage/runtime.js';
+import { createSession, disposeSession, readSession, runTurn, initializeGreeting, exportSession } from '../../src/tavernstage/runtime.js';
 import { createCore as scriptCore } from '../../public/scripts/tavernstage/script.js';
 import { createCore as regexCore } from '../../public/scripts/tavernstage/scripts-extensions-regex-engine.js';
 
@@ -18,6 +18,26 @@ function input() {
     };
 }
 const host = { countMessages: async () => { throw new Error('Unexpected tokenizer call'); }, countText: async () => { throw new Error('Unexpected tokenizer call'); }, generate: async () => { throw new Error('Unexpected model call'); } };
+
+test('empty-chat greeting uses ST macros, preserves state and permits alternate selection without inference', () => {
+    const source = input();
+    source.history = [];
+    source.userName = 'Traveler';
+    source.character.first_mes = 'Hello {{user}}, {{char}} speaking. {{setvar::visit::1}}';
+    source.character.data = { alternate_greetings: ['Alternate {{char}}'], extensions: {} };
+    const session = createSession(source, host);
+    const result = initializeGreeting(session);
+    assert.equal(result.chat.length, 1);
+    assert.equal(result.chat[0].mes, 'Hello Traveler, Protocol fixture speaking. ');
+    assert.equal(result.chatMetadata.variables.visit, '1');
+    assert.throws(() => initializeGreeting(session), /empty idle session/);
+    const restored = createSession(exportSession(session), host);
+    assert.deepEqual(readSession(restored).chatMetadata, result.chatMetadata);
+    disposeSession(restored); disposeSession(session);
+    const alternate = createSession(source, host);
+    assert.equal(initializeGreeting(alternate, { greetingIndex: 1 }).chat[0].mes, 'Alternate Protocol fixture');
+    disposeSession(alternate);
+});
 
 test('sessions own cloned input and snapshots without browser globals or implicit transport', () => {
     assert.equal(typeof globalThis.document, 'undefined');
