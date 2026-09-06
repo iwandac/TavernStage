@@ -4,9 +4,11 @@ import { createCore as createUtils } from '../../public/scripts/tavernstage/scri
 import { excludeKeysByYaml } from '../util.js';
 import { chatCompletionBody, customBodyParameters } from './request-body.js';
 import { readChatStream } from './stream-response.js';
+import { getRuntimeErrorCode, RuntimeTransportError } from './runtime-errors.js';
+import { setTimeout as delay } from 'node:timers/promises';
 
 /** Explicit local G1 adapter. Construction performs no network or user-file reads. */
-export function createOllamaHost({ baseUrl, model, modelDigest, timeoutMs = 240_000, onExchange }, fetcher = globalThis.fetch) {
+export function createOllamaHost({ baseUrl, model, modelDigest, timeoutMs = 240_000, maxRetries = 0, onExchange }, fetcher = globalThis.fetch) {
     const base = new URL(baseUrl);
     if (base.protocol !== 'http:' || !['127.0.0.1', '[::1]'].includes(base.hostname)
         || base.username || base.password || base.pathname !== '/' || base.search || base.hash) {
@@ -16,6 +18,7 @@ export function createOllamaHost({ baseUrl, model, modelDigest, timeoutMs = 240_
         throw new TypeError('G1 host requires the explicitly selected qwen3.6 model and digest');
     }
     if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 300_000) throw new TypeError('Invalid deadline');
+    if (!Number.isInteger(maxRetries) || maxRetries < 0 || maxRetries > 2) throw new TypeError('Invalid retry limit');
     const tokenizerModel = 'gpt-3.5-turbo'; // Original ST custom qwen3.6 fallback, not a claim of Qwen token accuracy.
     const tokenizer = tiktoken.encoding_for_model(tokenizerModel);
     const { getStringHash } = createUtils({ Math });
@@ -64,23 +67,46 @@ export function createOllamaHost({ baseUrl, model, modelDigest, timeoutMs = 240_
                     && !(message.role === 'assistant' && message.content === undefined && Array.isArray(message.tool_calls) && message.tool_calls.length))) {
                 throw new Error('Final request violates the fixed model/non-streaming text boundary');
             }
-            const boundedSignal = AbortSignal.any([AbortSignal.timeout(timeoutMs), ...(signal ? [signal] : [])]);
-            const tagsResponse = await fetcher(new URL('/api/tags', base), { signal: boundedSignal, redirect: 'error' });
-            if (!tagsResponse.ok) throw new Error(`Ollama model inspection failed: ${tagsResponse.status}`);
-            const tags = await readBoundedJson(tagsResponse, boundedSignal, 1024 * 1024);
-            if (!tags.models?.some(entry => entry.name === model && entry.digest === modelDigest)) throw new Error('Ollama model digest changed');
-            boundedSignal.throwIfAborted();
-            const response = await fetcher(new URL('/v1/chat/completions', base), {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, redirect: 'error',
-                body: JSON.stringify(body), signal: boundedSignal,
-            });
-            if (!response.ok) throw new Error(`Ollama generation failed: ${response.status}`);
-            const result = data.stream
-                ? await readChatStream(response, { signal: boundedSignal, onDraft, parseToolCalls })
-                : await readBoundedJson(response, boundedSignal, 2 * 1024 * 1024);
-            boundedSignal.throwIfAborted();
-            if (!Array.isArray(result.choices) || !result.choices.length) throw new Error('Invalid Ollama chat response');
-            if (!['stop', 'tool_calls'].includes(result.choices[0].finish_reason)) throw new Error('Incomplete model response');
+            const deadline = new AbortController();
+            const timer = setTimeout(() => deadline.abort(new RuntimeTransportError('runtime-timeout')), timeoutMs);
+            const boundedSignal = AbortSignal.any([deadline.signal, ...(signal ? [signal] : [])]);
+            let result;
+            try {
+                for (let attempt = 0; ; attempt++) {
+                    try {
+                        boundedSignal.throwIfAborted();
+                        const tagsResponse = await fetchResponse(fetcher, new URL('/api/tags', base), { signal: boundedSignal, redirect: 'error' });
+                        const tags = await readBoundedJson(tagsResponse, boundedSignal, 1024 * 1024);
+                        if (!Array.isArray(tags?.models)) throw new RuntimeTransportError('invalid-response');
+                        if (!tags.models.some(entry => entry?.name === model && entry.digest === modelDigest)) throw new RuntimeTransportError('model-mismatch', 'Ollama model digest changed');
+                        boundedSignal.throwIfAborted();
+                        const response = await fetchResponse(fetcher, new URL('/v1/chat/completions', base), {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' }, redirect: 'error',
+                            body: JSON.stringify(body), signal: boundedSignal,
+                        });
+                        result = data.stream
+                            ? await readChatStream(response, { signal: boundedSignal, onDraft, parseToolCalls })
+                            : await readBoundedJson(response, boundedSignal, 2 * 1024 * 1024);
+                        boundedSignal.throwIfAborted();
+                        if (!Array.isArray(result?.choices) || result.choices.length !== 1
+                            || !result.choices[0]?.message || !['stop', 'length', 'tool_calls'].includes(result.choices[0].finish_reason)) {
+                            throw new RuntimeTransportError('invalid-response', 'Invalid Ollama chat response');
+                        }
+                        break;
+                    } catch (error) {
+                        if (boundedSignal.aborted) throw signal?.aborted
+                            ? new RuntimeTransportError('runtime-cancelled') : new RuntimeTransportError('runtime-timeout');
+                        if (attempt >= maxRetries || !['provider-unavailable', 'provider-rate-limited', 'stream-interrupted'].includes(getRuntimeErrorCode(error))) throw error;
+                        // Only inference is retried. Core history, tools and receipt hooks run once,
+                        // after success. Each parser owns new text; no draft clear or concatenation.
+                        await delay(attempt === 0 ? 250 : 750, undefined, { signal: boundedSignal });
+                    }
+                }
+            } catch (error) {
+                if (boundedSignal.aborted) throw signal?.aborted
+                    ? new RuntimeTransportError('runtime-cancelled') : new RuntimeTransportError('runtime-timeout');
+                throw error;
+            } finally { clearTimeout(timer); }
             await onExchange?.({ request: structuredClone(body), response: structuredClone(result) });
             return result;
         },
@@ -88,8 +114,25 @@ export function createOllamaHost({ baseUrl, model, modelDigest, timeoutMs = 240_
     };
 }
 
+async function fetchResponse(fetcher, url, init) {
+    let response;
+    try { response = await fetcher(url, init); } catch (error) {
+        if (init.signal.aborted) throw init.signal.reason;
+        // Redirect rejection is a boundary violation, not a transient outage.
+        if (/redirect/i.test(`${error?.message} ${error?.cause?.message}`)) throw new RuntimeTransportError('invalid-response');
+        if (error instanceof TypeError || ['ECONNRESET', 'ECONNREFUSED', 'EPIPE', 'ETIMEDOUT'].includes(error?.code)) throw new RuntimeTransportError('provider-unavailable');
+        throw error;
+    }
+    if (!response.ok) {
+        await response.body?.cancel().catch(() => {});
+        throw new RuntimeTransportError(response.status === 429 ? 'provider-rate-limited'
+            : response.status >= 500 ? 'provider-unavailable' : 'invalid-response');
+    }
+    return response;
+}
+
 async function readBoundedJson(response, signal, maxBytes) {
-    if (!response.body) throw new Error('Missing response body');
+    if (!response.body) throw new RuntimeTransportError('invalid-response', 'Missing response body');
     const reader = response.body.getReader();
     const chunks = []; let bytes = 0;
     const cancel = () => { void reader.cancel(signal.reason).catch(() => {}); };
@@ -97,12 +140,15 @@ async function readBoundedJson(response, signal, maxBytes) {
     try {
         while (true) {
             signal.throwIfAborted();
-            const item = await reader.read(); signal.throwIfAborted();
+            let item;
+            try { item = await reader.read(); } catch { throw new RuntimeTransportError('stream-interrupted'); }
+            signal.throwIfAborted();
             if (item.done) break;
             bytes += item.value.byteLength;
-            if (bytes > maxBytes) throw new Error('Response byte budget exceeded');
+            if (bytes > maxBytes) throw new RuntimeTransportError('resource-limit', 'Response byte budget exceeded');
             chunks.push(item.value);
         }
-        return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+        try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+        catch { throw new RuntimeTransportError('invalid-response'); }
     } finally { signal.removeEventListener('abort', cancel); await reader.cancel().catch(() => {}); reader.releaseLock(); }
 }

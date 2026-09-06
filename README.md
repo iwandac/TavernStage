@@ -46,6 +46,8 @@ npm run test:tavernstage
 
 `src/tavernstage/ollama-host.js` 提供本地文本适配器：必须指定字面 loopback 地址、`qwen3.6:latest` 和实际模型 digest；校验模型、拒绝重定向，并传递取消信号。它支持有界 SSE，拒绝不完整流、媒体、schema、额外请求头或未适配的提示词后处理。这里复用 ST 对该自定义模型的分词回退规则，不宣称这是 Qwen 的精确 token 数。
 
+`stop` 与 `length` 均是成功结束；达到配置的 token 上限不报错、不自动续写。宿主可显式设置 `maxRetries: 2`（默认 `0`），仅对连接故障、HTTP 429/5xx 或中断的响应进行最多两次重试，等待 250/750 毫秒；模型检查、全部尝试和等待共用原 `timeoutMs`，取消立即终止等待。身份不符、无效数据及资源上限不重试。重试只重做模型推理，不重跑核心回合、工具或已完成回执；成功后的 `onExchange` 只调用一次。流式草稿保持到下一次尝试产生替换文本，不拼接不同尝试。`runtime-errors.js` 导出的 `getRuntimeErrorCode` 仅返回安全错误分类，宿主不应向用户透传供应商正文或原始异常。此策略不代替持久回合恢复或未知工具结果查询。
+
 上述核心入口仍是内存上下文；可恢复调用使用 `src/tavernstage/managed-runtime.js` 的 `createRuntime({ authority, host, tools, limits })`，得到 `prepareSession`、`runTurn`、`recoverRun`、`readRun`、`readSession`、`cancelRun`、`dispose` 和 `inspect`。回合固定 sessionId/runId/baseRevision/generation/profileId/profileDigest/deadlineAtMs；重复 ID 不能换输入。每次运行使用独立核心上下文，只有确认提交才更新历史，流式文本只是替换式草稿，不含隐藏 reasoning 或工具参数。SSE 累积后的完整响应仍经原 ST 普通 Generate 完成路径处理，不宣称复制了原浏览器的全部流式 UI 行为。
 
 宿主必须实现 `authority.read/create/compareAndSwap(id, version, next, fence)`，在原子写入点校验 fence 中的 generation、revision 和 deadlineAtMs。capsule 保存完整重建输入、变量、世界书状态、随机熵、原回合 journal 和提交 candidate；调用方不得将凭据放进这些数据。工具由显式 host 验证、授权及执行，以 actionId/argsDigest 回执确认；恢复查询还须返回原已存 operationId/payloadDigest，不能简单回显查询参数。`queryModel`/工具 query 无已知结果时保持 suspended，不自动再次执行；本地 Ollama 适配器没有模型结果查询 API，因此真实调用结果丢失时不能自动补造成功。

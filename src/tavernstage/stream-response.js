@@ -1,7 +1,9 @@
+import { RuntimeTransportError } from './runtime-errors.js';
+
 /** Bounded OpenAI SSE framing. Tool deltas are reduced by the shared ST parser. */
 export async function readChatStream(response, { signal, parseToolCalls, onDraft,
     maxBytes = 2 * 1024 * 1024, maxFrames = 8192, maxOutputBytes = 16 * 1024 } = {}) {
-    if (!response.body || !response.headers.get('content-type')?.includes('text/event-stream')) throw new Error('Expected an SSE response');
+    if (!response.body || !response.headers.get('content-type')?.includes('text/event-stream')) throw new RuntimeTransportError('invalid-response', 'Expected an SSE response');
     const reader = response.body.getReader();
     const decoder = new TextDecoder('utf-8', { fatal: true });
     let buffer = '', text = '', reasoning = '', bytes = 0, frames = 0, finish = null, done = false;
@@ -40,7 +42,8 @@ export async function readChatStream(response, { signal, parseToolCalls, onDraft
     try {
         while (!done) {
             signal?.throwIfAborted();
-            const item = await reader.read();
+            let item;
+            try { item = await reader.read(); } catch { throw new RuntimeTransportError('stream-interrupted'); }
             signal?.throwIfAborted();
             if (item.done) { buffer += decoder.decode(); break; }
             bytes += item.value.byteLength;
@@ -55,11 +58,17 @@ export async function readChatStream(response, { signal, parseToolCalls, onDraft
             }
         }
         if (buffer.trim()) await frame(buffer);
-        if (!done || !['stop', 'tool_calls'].includes(finish)) throw new Error('Incomplete model stream');
+        if (!done || finish == null) throw new RuntimeTransportError('stream-interrupted', 'Incomplete model stream');
+        if (!['stop', 'length', 'tool_calls'].includes(finish)) throw new RuntimeTransportError('invalid-response', 'Unsupported model completion');
         const message = { role: 'assistant', content: text };
         if (reasoning) message.reasoning = reasoning;
         if (calls[0]?.length) message.tool_calls = calls[0];
         return { choices: [{ index: 0, message, finish_reason: finish }] };
+    } catch (error) {
+        if (signal?.aborted) throw signal.reason;
+        if (error instanceof RuntimeTransportError) throw error;
+        if (/budget|frame too large/.test(error?.message)) throw new RuntimeTransportError('resource-limit', 'Stream resource budget exceeded');
+        throw new RuntimeTransportError('invalid-response', 'Invalid model stream');
     } finally {
         signal?.removeEventListener('abort', cancel);
         await reader.cancel().catch(() => {}); reader.releaseLock();

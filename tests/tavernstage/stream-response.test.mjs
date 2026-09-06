@@ -35,8 +35,14 @@ test('shared upstream tool-delta fix retains identity and appends arguments', as
     assert.deepEqual(result.choices[0].message.tool_calls, [{ index: 0, id: 'call-A', type: 'function', function: { name: 'act', arguments: '{"x":1}' } }]);
 });
 
-test('truncation, missing completion, invalid index and budgets fail closed', async () => {
-    for (const text of [chunk({ content: 'partial' }), chunk({ content: 'partial' }) + end('length') + done,
+test('length completion is successful text, without continuation', async () => {
+    const result = await readChatStream(response(chunk({ content: 'complete within budget' }) + end('length') + done));
+    assert.equal(result.choices[0].finish_reason, 'length');
+    assert.equal(result.choices[0].message.content, 'complete within budget');
+});
+
+test('missing completion, invalid index and budgets fail closed', async () => {
+    for (const text of [chunk({ content: 'partial' }),
         chunk({ content: 'partial' }) + done, chunk({ tool_calls: [{ index: 1_000_000 }] }) + end('tool_calls') + done]) {
         await assert.rejects(readChatStream(response(text)));
     }
